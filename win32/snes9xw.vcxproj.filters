@@ -40,6 +40,9 @@
     <Filter Include="Filter">
       <UniqueIdentifier>{1e3e39fd-b2d2-4c3f-83b2-b5731ab8deee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Snestistics">
+      <UniqueIdentifier>{188076ae-8461-4dee-8eeb-b3e10d7e9ffa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="globals.h">
@@ -245,6 +248,9 @@
     </ClInclude>
     <ClInclude Include="cgMini.h">
       <Filter>GUI\VideoDriver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\snestistics\snestistics.h">
+      <Filter>Snestistics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -541,6 +547,9 @@
     </ClCompile>
     <ClCompile Include="DumpAtEnd.cpp">
       <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\snestistics\snestistics.cpp">
+      <Filter>Snestistics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

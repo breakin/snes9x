@@ -204,12 +204,16 @@
 #include "debug.h"
 #endif
 
+#include "snestistics/snestistics.h"
+
 static void S9xResetCPU (void);
 static void S9xSoftResetCPU (void);
 
 
 static void S9xResetCPU (void)
 {
+	auto reg_before = snestistics_capture_regs();
+
 	S9xSoftResetCPU();
 	Registers.SL = 0xff;
 	Registers.P.W = 0;
@@ -218,6 +222,8 @@ static void S9xResetCPU (void)
 	Registers.Y.W = 0;
 	SetFlags(MemoryFlag | IndexFlag | IRQ | Emulation);
 	ClearFlags(Decimal);
+
+	snestistics_event(SnestisticsEvent::EVENT_RESET, reg_before, snestistics_capture_regs());
 }
 
 static void S9xSoftResetCPU (void)

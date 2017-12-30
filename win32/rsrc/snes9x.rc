@@ -981,6 +981,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Options...",                 ID_NETPLAY_OPTIONS
     END
+    POPUP "Snes&tistics"
+    BEGIN
+        MENUITEM "&Save trace and exit...",     ID_SNESTISTICS_SAVE_EXIT
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&About...",                   ID_HELP_ABOUT

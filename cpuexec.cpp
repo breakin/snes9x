@@ -202,6 +202,8 @@
 #include "missing.h"
 #endif
 
+#include "snestistics/snestistics.h"
+
 static inline void S9xReschedule (void);
 
 
@@ -213,6 +215,8 @@ void S9xMainLoop (void)
 		{
 			if (Timings.NMITriggerPos <= CPU.Cycles)
 			{
+				const auto reg_before = snestistics_capture_regs();
+
 				CPU.NMILine = FALSE;
 				Timings.NMITriggerPos = 0xffff;
 				if (CPU.WaitingForInterrupt)
@@ -222,11 +226,14 @@ void S9xMainLoop (void)
 				}
 
 				S9xOpcode_NMI();
+				snestistics_event(SnestisticsEvent::EVENT_NMI, reg_before, snestistics_capture_regs());
 			}
 		}
 
 		if (CPU.IRQTransition || CPU.IRQExternal)
 		{
+			const auto reg_before = snestistics_capture_regs();
+
 			if (CPU.IRQPending)
 				CPU.IRQPending--;
 			else
@@ -240,8 +247,10 @@ void S9xMainLoop (void)
 				CPU.IRQTransition = FALSE;
 				CPU.IRQPending = Timings.IRQPendCount;
 
-				if (!CheckFlag(IRQ))
+				if (!CheckFlag(IRQ)) {
 					S9xOpcode_IRQ();
+					snestistics_event(SnestisticsEvent::EVENT_IRQ, reg_before, snestistics_capture_regs());
+				}
 			}
 		}
 
@@ -305,8 +314,12 @@ void S9xMainLoop (void)
 				Opcodes = S9xOpcodesSlow;
 		}
 
+		const auto reg_before_op = snestistics_capture_regs();
+
 		Registers.PCw++;
 		(*Opcodes[Op].S9xOpcode)();
+
+		snestistics_op(reg_before_op, snestistics_capture_regs());
 
 		if (Settings.SA1)
 			S9xSA1MainLoop();

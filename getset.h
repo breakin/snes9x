@@ -203,6 +203,8 @@
 #include "bsx.h"
 #include "msu1.h"
 
+#include "snestistics/snestistics.h"
+
 #define addCyclesInMemoryAccess \
 	if (!CPU.InDMAorHDMA) \
 	{ \
@@ -255,6 +257,7 @@ inline uint8 S9xGetByte (uint32 Address)
 	{
 		byte = *(GetAddress + (Address & 0xffff));
 		addCyclesInMemoryAccess;
+		snestistics_read_byte(Address, byte);
 		return (byte);
 	}
 
@@ -263,6 +266,7 @@ inline uint8 S9xGetByte (uint32 Address)
 		case CMemory::MAP_CPU:
 			byte = S9xGetCPU(Address & 0xffff);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_PPU:
@@ -271,6 +275,7 @@ inline uint8 S9xGetByte (uint32 Address)
 
 			byte = S9xGetPPU(Address & 0xffff);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_LOROM_SRAM:
@@ -281,6 +286,7 @@ inline uint8 S9xGetByte (uint32 Address)
 			// unbound & SRAMMask : SRAM offset
 			byte = *(Memory.SRAM + ((((Address & 0xff0000) >> 1) | (Address & 0x7fff)) & Memory.SRAMMask));
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_LOROM_SRAM_B:
@@ -292,11 +298,13 @@ inline uint8 S9xGetByte (uint32 Address)
 		case CMemory::MAP_RONLY_SRAM:
 			byte = *(Memory.SRAM + (((Address & 0x7fff) - 0x6000 + ((Address & 0xf0000) >> 3)) & Memory.SRAMMask));
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_BWRAM:
 			byte = *(Memory.BWRAM + ((Address & 0x7fff) - 0x6000));
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_DSP:
@@ -307,42 +315,50 @@ inline uint8 S9xGetByte (uint32 Address)
 		case CMemory::MAP_SPC7110_ROM:
 			byte = S9xGetSPC7110Byte(Address);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_SPC7110_DRAM:
 			byte = S9xGetSPC7110(0x4800);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_C4:
 			byte = S9xGetC4(Address & 0xffff);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_OBC_RAM:
 			byte = S9xGetOBC1(Address & 0xffff);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_SETA_DSP:
 			byte = S9xGetSetaDSP(Address);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_SETA_RISC:
 			byte = S9xGetST018(Address);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_BSX:
 			byte = S9xGetBSX(Address);
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 
 		case CMemory::MAP_NONE:
 		default:
 			byte = OpenBus;
 			addCyclesInMemoryAccess;
+			snestistics_read_byte(Address, byte);
 			return (byte);
 	}
 }
@@ -350,9 +366,12 @@ inline uint8 S9xGetByte (uint32 Address)
 inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 {
 	uint32	mask = MEMMAP_MASK & (w == WRAP_PAGE ? 0xff : (w == WRAP_BANK ? 0xffff : 0xffffff));
+	uint16_t word;
 	if ((Address & mask) == mask)
 	{
 		PC_t	a;
+
+		snestistics_pause_read_byte(true);
 
 		OpenBus = S9xGetByte(Address);
 
@@ -361,28 +380,31 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			case WRAP_PAGE:
 				a.xPBPC = Address;
 				a.B.xPCl++;
-				return (OpenBus | (S9xGetByte(a.xPBPC) << 8));
+				word = (OpenBus | (S9xGetByte(a.xPBPC) << 8));
 
 			case WRAP_BANK:
 				a.xPBPC = Address;
 				a.W.xPC++;
-				return (OpenBus | (S9xGetByte(a.xPBPC) << 8));
+				word = (OpenBus | (S9xGetByte(a.xPBPC) << 8));
 
 			case WRAP_NONE:
 			default:
-				return (OpenBus | (S9xGetByte(Address + 1) << 8));
+				word = (OpenBus | (S9xGetByte(Address + 1) << 8));
 		}
+		snestistics_read_word(Address, word);
+		snestistics_pause_read_byte(false);
+		return (word);
 	}
 
 	int		block = (Address & 0xffffff) >> MEMMAP_SHIFT;
 	uint8	*GetAddress = Memory.Map[block];
 	int32	speed = memory_speed(Address);
-	uint16	word;
 
 	if (GetAddress >= (uint8 *) CMemory::MAP_LAST)
 	{
 		word = READ_WORD(GetAddress + (Address & 0xffff));
 		addCyclesInMemoryAccess_x2;
+		snestistics_read_word(Address, word);
 		return (word);
 	}
 
@@ -393,19 +415,25 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetCPU((Address + 1) & 0xffff) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_PPU:
 			if (CPU.InDMAorHDMA)
 			{
+				snestistics_pause_read_byte(true);
 				OpenBus = S9xGetByte(Address);
-				return (OpenBus | (S9xGetByte(Address + 1) << 8));
+				word = (OpenBus | (S9xGetByte(Address + 1) << 8));
+				snestistics_read_word(Address, word);
+				snestistics_pause_read_byte(false);
+				return (word);
 			}
 
 			word  = S9xGetPPU(Address & 0xffff);
 			addCyclesInMemoryAccess;
 			word |= S9xGetPPU((Address + 1) & 0xffff) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_LOROM_SRAM:
@@ -416,6 +444,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 				word = (*(Memory.SRAM + ((((Address & 0xff0000) >> 1) | (Address & 0x7fff)) & Memory.SRAMMask))) |
 					  ((*(Memory.SRAM + (((((Address + 1) & 0xff0000) >> 1) | ((Address + 1) & 0x7fff)) & Memory.SRAMMask))) << 8);
 			addCyclesInMemoryAccess_x2;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_LOROM_SRAM_B:
@@ -425,6 +454,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 				word = (*(Multi.sramB + ((((Address & 0xff0000) >> 1) | (Address & 0x7fff)) & Multi.sramMaskB))) |
 					  ((*(Multi.sramB + (((((Address + 1) & 0xff0000) >> 1) | ((Address + 1) & 0x7fff)) & Multi.sramMaskB))) << 8);
 			addCyclesInMemoryAccess_x2;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_HIROM_SRAM:
@@ -435,11 +465,13 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 				word = (*(Memory.SRAM + (((Address & 0x7fff) - 0x6000 + ((Address & 0xf0000) >> 3)) & Memory.SRAMMask)) |
 					   (*(Memory.SRAM + ((((Address + 1) & 0x7fff) - 0x6000 + (((Address + 1) & 0xf0000) >> 3)) & Memory.SRAMMask)) << 8));
 			addCyclesInMemoryAccess_x2;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_BWRAM:
 			word = READ_WORD(Memory.BWRAM + ((Address & 0x7fff) - 0x6000));
 			addCyclesInMemoryAccess_x2;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_DSP:
@@ -447,6 +479,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetDSP((Address + 1) & 0xffff) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_SPC7110_ROM:
@@ -454,6 +487,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetSPC7110Byte(Address + 1) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_SPC7110_DRAM:
@@ -461,6 +495,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetSPC7110(0x4800) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_C4:
@@ -468,6 +503,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetC4((Address + 1) & 0xffff) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_OBC_RAM:
@@ -475,6 +511,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetOBC1((Address + 1) & 0xffff) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_SETA_DSP:
@@ -482,6 +519,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetSetaDSP(Address + 1) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_SETA_RISC:
@@ -489,6 +527,7 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetST018(Address + 1) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_BSX:
@@ -496,12 +535,14 @@ inline uint16 S9xGetWord (uint32 Address, enum s9xwrap_t w = WRAP_NONE)
 			addCyclesInMemoryAccess;
 			word |= S9xGetBSX(Address + 1) << 8;
 			addCyclesInMemoryAccess;
+			snestistics_read_word(Address, word);
 			return (word);
 
 		case CMemory::MAP_NONE:
 		default:
 			word = OpenBus | (OpenBus << 8);
 			addCyclesInMemoryAccess_x2;
+			snestistics_read_word(Address, word);
 			return (word);
 	}
 }

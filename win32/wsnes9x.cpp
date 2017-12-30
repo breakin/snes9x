@@ -232,6 +232,8 @@
 #include "InputCustom.h"
 #include <vector>
 
+#include "snestistics/snestistics.h"
+
 #if (((defined(_MSC_VER) && _MSC_VER >= 1300)) || defined(__MINGW32__))
 	// both MINGW and VS.NET use fstream instead of fstream.h which is deprecated
 	#include <fstream>
@@ -2398,6 +2400,12 @@ LRESULT CALLBACK WinProc(
 			RestoreGUIDisplay ();
 			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_ABOUT), hWnd, DlgAboutProc);
 			RestoreSNESDisplay ();
+			break;
+		case ID_SNESTISTICS_SAVE_EXIT:
+			// We currently exit since our handling of what would happen if we didn't exit isn't working done yet
+			snestistics_save();
+			S9xSetPause(PAUSE_EXIT);
+			PostMessage(hWnd, WM_DESTROY, 0, 0);
 			break;
 		case ID_FRAME_ADVANCE:
 			Settings.Paused = true;

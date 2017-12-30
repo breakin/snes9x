@@ -205,6 +205,8 @@
 #include "display.h"
 #include "language.h"
 
+#include "snestistics/snestistics.h"
+
 #ifndef min
 #define min(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
@@ -1297,6 +1299,11 @@ bool8 S9xUnfreezeGame (const char *filename)
 			}
 
 			return (FALSE);
+		}
+
+		{
+			const auto reg = snestistics_capture_regs();
+			snestistics_event(SnestisticsEvent::EVENT_RESET, reg, reg);
 		}
 
 		if (S9xMovieActive())
