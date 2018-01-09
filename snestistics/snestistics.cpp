@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <cassert>
+#include "rpc.h"
+
+#pragma comment(lib, "Rpcrt4")
 
 // Note this link goes outside the snes9x source code base and reach into snestistics
 #include "../../../source/trace_format.h"
@@ -50,6 +53,15 @@ public:
 				fclose(f);
 			}
 		}
+
+		snestistics::TraceHeader header;
+		header.version = TRACE_VERSION_NUMBER;
+
+		UUID id;
+		RPC_STATUS status = UuidCreate(&id);
+		assert(status == RPC_S_OK || status == RPC_S_UUID_LOCAL_ONLY);
+		memcpy(header.content_guid, id.Data4, 8);
+		fwrite(&header, sizeof(header), 1, trace_log);
 
 		_op_counter = 0;
 		_op_counter_last_written = 0;
@@ -229,7 +241,7 @@ SnesisticsRegs snestistics_capture_regs() {
 	SnesisticsRegs regs;
 	const SRegisters &sr = Registers;
 
-	// TODO: This is equivalent to unpack but I don't want to mess with Registers
+	// NOTE: This is equivalent to unpack but I don't want to mess with global Registers
 	uint16_t P = sr.P.W;
 	P &= ~(Overflow|Carry|Negative|Zero);
 	if (CheckOverflow()) P |= Overflow;
