@@ -60,6 +60,7 @@ public:
 		if (Memory.LoROM) header.rom_mode = snestistics::TraceHeader::ROMMODE_LOROM;
 		else if (Memory.HiROM) header.rom_mode = snestistics::TraceHeader::ROMMODE_HIROM;
 		header.rom_size = Memory.CalculatedSize;
+		header.rom_checksum = Memory.CalculatedChecksum;
 
 		UUID id;
 		RPC_STATUS status = UuidCreate(&id);
