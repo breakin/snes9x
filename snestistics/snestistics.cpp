@@ -56,6 +56,10 @@ public:
 
 		snestistics::TraceHeader header;
 		header.version = TRACE_VERSION_NUMBER;
+		header.rom_mode = snestistics::TraceHeader::ROMMODE_UNKNOWN;
+		if (Memory.LoROM) header.rom_mode = snestistics::TraceHeader::ROMMODE_LOROM;
+		else if (Memory.HiROM) header.rom_mode = snestistics::TraceHeader::ROMMODE_HIROM;
+		header.rom_size = Memory.CalculatedSize;
 
 		UUID id;
 		RPC_STATUS status = UuidCreate(&id);
