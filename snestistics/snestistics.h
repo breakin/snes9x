@@ -25,4 +25,9 @@ void snestistics_read_word(const uint32_t adress, const uint16_t value);
 void snestistics_pause_read_byte(const bool pause);
 void snestistics_save();
 
+void snestistics_set_save_trace_helper(bool state);
+bool snestistics_get_active();
+bool snestistics_get_save_trace_helper();
+
+
 #endif // SNESTISTICS_H

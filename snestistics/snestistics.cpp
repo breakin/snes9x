@@ -16,8 +16,6 @@
 #include "snes9x.h"
 #include "memmap.h"
 
-#define WRITE_HELPER
-
 /*
 	NOTE: This class just assumes same endian on snestistics and the emulator.
 */
@@ -37,21 +35,9 @@ public:
 		sprintf(name, "trace%d.trace", _reopens);
 
 		trace_log = fopen(name, "wb");
-		#ifdef WRITE_HELPER
+		if (_save_trace_helper) {
 			sprintf(name, "trace%d.trace_helper", _reopens);
 			trace_log_helper = fopen(name, "wb");
-		#endif
-
-		{
-			sprintf(name, "trace%d.rominfo", _reopens);
-			FILE *f = fopen(name, "wt");
-			if (f) {
-				fprintf(f, "rom filename: %s\n", Memory.ROMFilename);
-				fprintf(f, "calculated size: %08X\n", Memory.CalculatedSize);
-				fprintf(f, "lorom: %d\n", Memory.LoROM);
-				fprintf(f, "hirom: %d\n", Memory.HiROM);
-				fclose(f);
-			}
 		}
 
 		snestistics::TraceHeader header;
@@ -78,6 +64,11 @@ public:
 		return state;
 	}
 
+	bool _save_trace_helper = false;
+	void set_save_trace_helper(bool state) { _save_trace_helper = state; }
+	bool get_save_trace_helper() const { return _save_trace_helper; }
+	bool get_active() const { return trace_log != nullptr; }
+
 	void write(snestistics::TraceEventType se) {
 		snestistics::TraceEvent te;
 		te.type = se;
@@ -92,10 +83,10 @@ public:
 		write(snestistics::TraceEventType::EVENT_FINISHED);
 		fclose(trace_log);
 		trace_log = nullptr;
-		#ifdef WRITE_HELPER
+		if (trace_log_helper) {
 			fclose(trace_log_helper);
 			trace_log_helper = nullptr;
-		#endif
+		}
 	}
 	
 	inline bool is_memory_mapped(uint8_t bank, uint16_t adr) {
@@ -120,8 +111,7 @@ public:
 	}
 
 	void op(const SnesisticsRegs &reg_before, const SnesisticsRegs &reg_after) {
-		#ifdef WRITE_HELPER
-		{
+		if (trace_log_helper) {
 			snestistics::HelperOp op;
 			op.current_op = _op_counter;
 			parse_reg(op.registers_before, reg_before);
@@ -130,7 +120,6 @@ public:
 			fwrite(&type, sizeof(type), 1, trace_log_helper);
 			fwrite(&op, sizeof(op), 1, trace_log_helper);
 		}
-		#endif
 		_op_counter++;
 	}
 
@@ -164,8 +153,7 @@ public:
 			fwrite(GetAddress7F, 64*1024, 1, trace_log);
 		}
 
-		#ifdef WRITE_HELPER
-		{
+		if (trace_log_helper) {
 			snestistics::HelperOp op;
 			op.current_op = _op_counter;
 			parse_reg(op.registers_before, reg_before);
@@ -174,7 +162,6 @@ public:
 			fwrite(&type, sizeof(type), 1, trace_log_helper);
 			fwrite(&op, sizeof(op), 1, trace_log_helper);
 		}
-		#endif
 		_op_counter++;
 	}
 
@@ -231,9 +218,7 @@ public:
 	}
 
 	FILE *trace_log = nullptr;
-	#ifdef WRITE_HELPER
-		FILE *trace_log_helper = nullptr;
-	#endif
+	FILE *trace_log_helper = nullptr;
 	uint32_t _reopens = 0;
 	uint64_t _op_counter = 0, _op_counter_last_written = 0;
 };
@@ -284,4 +269,16 @@ void snestistics_read_word(const uint32_t adress, const uint16_t value) {
 
 void snestistics_pause_read_byte(bool pause) {
 	SnesisticsState::instance()->pause_read_byte(pause);
+}
+
+void snestistics_set_save_trace_helper(bool state) {
+	SnesisticsState::instance()->set_save_trace_helper(state);
+}
+
+bool snestistics_get_save_trace_helper() {
+	return SnesisticsState::instance()->get_save_trace_helper();
+}
+
+bool snestistics_get_active() {
+	return SnesisticsState::instance()->get_active();
 }

@@ -984,6 +984,7 @@ BEGIN
     POPUP "Snes&tistics"
     BEGIN
         MENUITEM "&Save trace and exit...",     ID_SNESTISTICS_SAVE_EXIT
+        MENUITEM "&Save trace &helper",         ID_SNESTISTICS_SAVETRACEHELPER
     END
     POPUP "&Help"
     BEGIN

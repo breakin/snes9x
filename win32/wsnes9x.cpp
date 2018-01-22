@@ -2391,6 +2391,9 @@ LRESULT CALLBACK WinProc(
 		case ID_EMULATION_PAUSEWHENINACTIVE:
 			GUI.InactivePause = !GUI.InactivePause;
 			break;
+		case ID_SNESTISTICS_SAVETRACEHELPER:
+			snestistics_set_save_trace_helper(!snestistics_get_save_trace_helper());
+			break;
 		case ID_OPTIONS_SETTINGS:
 			RestoreGUIDisplay ();
 			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_EMU_SETTINGS), hWnd, DlgEmulatorProc);
@@ -3842,6 +3845,10 @@ static void CheckMenuStates ()
 
 	mii.fState = (GUI.InactivePause) ? MFS_CHECKED : MFS_UNCHECKED;
     SetMenuItemInfo (GUI.hMenu, ID_EMULATION_PAUSEWHENINACTIVE, FALSE, &mii);
+
+	mii.fState = (snestistics_get_save_trace_helper()) ? MFS_CHECKED : MFS_UNCHECKED;
+	mii.fState |= snestistics_get_active() ? MFS_DISABLED : MFS_ENABLED;
+	SetMenuItemInfo(GUI.hMenu, ID_SNESTISTICS_SAVETRACEHELPER, FALSE, &mii);
 
     mii.fState = MFS_UNCHECKED;
     if (Settings.StopEmulation)

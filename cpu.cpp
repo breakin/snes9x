@@ -209,11 +209,13 @@
 static void S9xResetCPU (void);
 static void S9xSoftResetCPU (void);
 
+// Variable to save a reset both for hard and soft resets, but not two for the same reset
+static bool snestistics_hack_doing_hard_reset = false;
 
 static void S9xResetCPU (void)
 {
+	snestistics_hack_doing_hard_reset = true;
 	auto reg_before = snestistics_capture_regs();
-
 	S9xSoftResetCPU();
 	Registers.SL = 0xff;
 	Registers.P.W = 0;
@@ -222,12 +224,13 @@ static void S9xResetCPU (void)
 	Registers.Y.W = 0;
 	SetFlags(MemoryFlag | IndexFlag | IRQ | Emulation);
 	ClearFlags(Decimal);
-
 	snestistics_event(SnestisticsEvent::EVENT_RESET, reg_before, snestistics_capture_regs());
+	snestistics_hack_doing_hard_reset = false;
 }
 
 static void S9xSoftResetCPU (void)
 {
+	auto reg_before = snestistics_capture_regs();
 	CPU.Cycles = 182; // Or 188. This is the cycle count just after the jump to the Reset Vector.
 	CPU.PrevCycles = CPU.Cycles;
 	CPU.V_Counter = 0;
@@ -285,6 +288,10 @@ static void S9xSoftResetCPU (void)
 	ICPU.S9xOpLengths = S9xOpLengthsM1X1;
 
 	S9xUnpackStatus();
+
+	if (!snestistics_hack_doing_hard_reset) {
+		snestistics_event(SnestisticsEvent::EVENT_RESET, reg_before, snestistics_capture_regs());
+	}
 }
 
 void S9xReset (void)

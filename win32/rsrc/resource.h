@@ -507,6 +507,7 @@
 #define ID_FILE_SAVE_FILE               40176
 #define ID_FILE_LOAD_FILE               40177
 #define ID_SNESTISTICS_SAVE_EXIT        40178
+#define ID_SNESTISTICS_SAVETRACEHELPER  40179
 
 
 // Next default values for new objects
@@ -514,7 +515,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        152
-#define _APS_NEXT_COMMAND_VALUE         40179
+#define _APS_NEXT_COMMAND_VALUE         40180
 #define _APS_NEXT_CONTROL_VALUE         3022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
