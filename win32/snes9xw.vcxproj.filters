@@ -252,6 +252,12 @@
     <ClInclude Include="..\snestistics\snestistics.h">
       <Filter>Snestistics</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\lz4\lib\lz4.h">
+      <Filter>Snestistics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\state_compression.h">
+      <Filter>Snestistics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\bsx.cpp">
@@ -549,6 +555,12 @@
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\snestistics\snestistics.cpp">
+      <Filter>Snestistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lz4\lib\lz4.c">
+      <Filter>Snestistics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\state_compression.cpp">
       <Filter>Snestistics</Filter>
     </ClCompile>
   </ItemGroup>

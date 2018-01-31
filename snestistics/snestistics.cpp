@@ -4,10 +4,13 @@
 #include <cassert>
 #include "rpc.h"
 
+#define NUM_TESTS 4
+
 #pragma comment(lib, "Rpcrt4")
 
 // Note this link goes outside the snes9x source code base and reach into snestistics
 #include "../../../source/trace_format.h"
+#include "../../../source/state_compression.h"
 
 // Access to internal snes9x structures
 #include "port.h"
@@ -36,8 +39,11 @@ public:
 
 		trace_log = fopen(name, "wb");
 		if (_save_trace_helper) {
-			sprintf(name, "trace%d.trace_helper", _reopens);
-			trace_log_helper = fopen(name, "wb");
+			for (int i=0; i<NUM_TESTS; i++) {
+				sprintf(name, "trace%d.trace_helper_%d", _reopens, i);
+				trace_log_helper_new[i] = fopen(name, "wb");
+				state_compression[i] = state_compression_create(sizeof(snestistics::TraceRegisters));
+			}
 		}
 
 		snestistics::TraceHeader header;
@@ -83,9 +89,28 @@ public:
 		write(snestistics::TraceEventType::EVENT_FINISHED);
 		fclose(trace_log);
 		trace_log = nullptr;
-		if (trace_log_helper) {
-			fclose(trace_log_helper);
-			trace_log_helper = nullptr;
+		if (trace_log_helper_new[0]) {
+			for (int i=0; i<NUM_TESTS; i++) {
+				state_compression_destroy(state_compression[i], trace_log_helper_new[i]);
+				fclose(trace_log_helper_new[i]);
+				trace_log_helper_new[i] = nullptr;
+
+				if (i==0)
+					continue;
+
+				char name[2048];
+				sprintf(name, "trace%d.trace_helper_%d", _reopens - 1, 0);
+				FILE *compare_file = fopen(name, "rb");
+
+				// Reopen result and compare with first one
+				sprintf(name, "trace%d.trace_helper_%d", _reopens-1, i);
+				FILE *blah = fopen(name, "rb");
+
+				state_compress_validate(blah, compare_file, i);
+
+				fclose(compare_file);
+				fclose(blah);
+			}
 		}
 	}
 	
@@ -111,14 +136,14 @@ public:
 	}
 
 	void op(const SnesisticsRegs &reg_before, const SnesisticsRegs &reg_after) {
-		if (trace_log_helper) {
-			snestistics::HelperOp op;
-			op.current_op = _op_counter;
-			parse_reg(op.registers_before, reg_before);
-			parse_reg(op.registers_after, reg_after);
-			snestistics::HelperType type = snestistics::HelperType::HELPER_OP;
-			fwrite(&type, sizeof(type), 1, trace_log_helper);
-			fwrite(&op, sizeof(op), 1, trace_log_helper);
+		if (trace_log_helper_new[0]) {
+			snestistics::TraceRegisters t0, t1;
+			parse_reg(t0, reg_before);
+			parse_reg(t1, reg_after);
+			for (int i=0; i<NUM_TESTS; i++) {
+				state_compression_add(state_compression[i], (uint8_t*)&t0, trace_log_helper_new[i], i);
+				state_compression_add(state_compression[i], (uint8_t*)&t1, trace_log_helper_new[i], i);
+			}
 		}
 		_op_counter++;
 	}
@@ -153,14 +178,14 @@ public:
 			fwrite(GetAddress7F, 64*1024, 1, trace_log);
 		}
 
-		if (trace_log_helper) {
-			snestistics::HelperOp op;
-			op.current_op = _op_counter;
-			parse_reg(op.registers_before, reg_before);
-			parse_reg(op.registers_after, reg_after);
-			snestistics::HelperType type = snestistics::HelperType::HELPER_OP;
-			fwrite(&type, sizeof(type), 1, trace_log_helper);
-			fwrite(&op, sizeof(op), 1, trace_log_helper);
+		if (trace_log_helper_new[0]) {
+			snestistics::TraceRegisters t0, t1;
+			parse_reg(t0, reg_before);
+			parse_reg(t1, reg_after);
+			for (int i = 0; i<NUM_TESTS; i++) {
+				state_compression_add(state_compression[i], (uint8_t*)&t0, trace_log_helper_new[i], i);
+				state_compression_add(state_compression[i], (uint8_t*)&t1, trace_log_helper_new[i], i);
+			}
 		}
 		_op_counter++;
 	}
@@ -218,7 +243,9 @@ public:
 	}
 
 	FILE *trace_log = nullptr;
-	FILE *trace_log_helper = nullptr;
+	FILE *trace_log_helper_new[NUM_TESTS] = {nullptr,nullptr};
+
+	StateCompression *state_compression[NUM_TESTS] = { nullptr,nullptr};
 	uint32_t _reopens = 0;
 	uint64_t _op_counter = 0, _op_counter_last_written = 0;
 };
