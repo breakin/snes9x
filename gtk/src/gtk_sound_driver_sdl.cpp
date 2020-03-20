@@ -1,122 +1,112 @@
-#include "gtk_s9x.h"
+/*****************************************************************************\
+     Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
+                This file is licensed under the Snes9x License.
+   For further information, consult the LICENSE file in the root directory.
+\*****************************************************************************/
+
 #include "gtk_sound_driver_sdl.h"
+#include "gtk_s9x.h"
 
-static void
-sdl_audio_callback (void *userdata, Uint8 *stream, int len)
+static void sdl_audio_callback(void *userdata, Uint8 *stream, int len)
 {
-    ((S9xSDLSoundDriver *) userdata)->mix ((unsigned char *) stream, len);
-
-    return;
+    ((S9xSDLSoundDriver *)userdata)->mix((unsigned char *)stream, len);
 }
 
-static void
-samples_available (void *data)
+static void c_samples_available(void *data)
 {
-    SDL_LockAudio ();
-    S9xFinalizeSamples ();
-    SDL_UnlockAudio ();
-
-    return;
+    ((S9xSDLSoundDriver *)data)->samples_available();
 }
 
-void
-S9xSDLSoundDriver::mix (unsigned char *output, int bytes)
+void S9xSDLSoundDriver::samples_available()
 {
-    SDL_LockAudio ();
-    S9xMixSamples (output, bytes >> (Settings.SixteenBitSound ? 1 : 0));
-    SDL_UnlockAudio ();
+    int snes_samples_available = S9xGetSampleCount();
+    S9xMixSamples((uint8 *)temp, snes_samples_available);
 
-    return;
-}
-
-S9xSDLSoundDriver::S9xSDLSoundDriver (void)
-{
-    audiospec = NULL;
-
-    return;
-}
-
-void
-S9xSDLSoundDriver::init (void)
-{
-    SDL_InitSubSystem (SDL_INIT_AUDIO);
-    stop ();
-
-    return;
-}
-
-void
-S9xSDLSoundDriver::terminate (void)
-{
-    stop ();
-
-    if (audiospec)
+    if (Settings.SoundSync && !Settings.TurboMode && !Settings.Mute)
     {
-        SDL_CloseAudio ();
-        free (audiospec);
-        audiospec = NULL;
-    }
+        mutex.lock();
+        int samples = buffer.space_empty();
+        mutex.unlock();
 
-    SDL_QuitSubSystem (SDL_INIT_AUDIO);
-
-    return;
-}
-
-void
-S9xSDLSoundDriver::start (void)
-{
-    if (!gui_config->mute_sound)
-    {
-        if (audiospec)
+        while (samples < snes_samples_available)
         {
-            SDL_PauseAudio (0);
+            usleep(100);
+            mutex.lock();
+            samples = buffer.space_empty();
+            mutex.unlock();
         }
     }
 
-    return;
+    mutex.lock();
+    buffer.push(temp, snes_samples_available);
+    mutex.unlock();
 }
 
-void
-S9xSDLSoundDriver::stop (void)
+void S9xSDLSoundDriver::mix(unsigned char *output, int bytes)
 {
-    if (audiospec)
-    {
-        SDL_PauseAudio (1);
-    }
-
-    return;
+    mutex.lock();
+    if (buffer.avail() >= bytes >> 1)
+        buffer.read((int16_t *)output, bytes >> 1);
+    mutex.unlock();
 }
 
-bool8
-S9xSDLSoundDriver::open_device (void)
+S9xSDLSoundDriver::S9xSDLSoundDriver()
 {
-    audiospec = (SDL_AudioSpec *) malloc (sizeof (SDL_AudioSpec));
+}
 
-    audiospec->freq = Settings.SoundPlaybackRate;
-    audiospec->channels = Settings.Stereo ? 2 : 1;
-    audiospec->format = Settings.SixteenBitSound ? AUDIO_S16SYS : AUDIO_U8;
-    audiospec->samples = (gui_config->sound_buffer_size * audiospec->freq / 1000) >> 1;
-    audiospec->callback = sdl_audio_callback;
-    audiospec->userdata = this;
+void S9xSDLSoundDriver::init()
+{
+    SDL_InitSubSystem(SDL_INIT_AUDIO);
+    stop();
+}
 
-    printf ("SDL sound driver initializing...\n");
-    printf ("    --> (Frequency: %dhz, Latency: %dms)...",
-            audiospec->freq,
-            (audiospec->samples * 1000 / audiospec->freq) << 1);
+void S9xSDLSoundDriver::terminate()
+{
+    stop();
+    SDL_CloseAudio();
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
 
-    if (SDL_OpenAudio (audiospec, NULL) < 0)
+void S9xSDLSoundDriver::start()
+{
+    if (!gui_config->mute_sound)
     {
-        printf ("Failed\n");
+        SDL_PauseAudio(0);
+    }
+}
 
-        free (audiospec);
-        audiospec = NULL;
+void S9xSDLSoundDriver::stop()
+{
+    SDL_PauseAudio(1);
+}
 
-        return FALSE;
+bool S9xSDLSoundDriver::open_device()
+{
+    audiospec = {};
+    audiospec.freq = Settings.SoundPlaybackRate;
+    audiospec.channels = 2;
+    audiospec.format = AUDIO_S16SYS;
+    audiospec.samples = (gui_config->sound_buffer_size * audiospec.freq / 1000) >> 2;
+    audiospec.callback = sdl_audio_callback;
+    audiospec.userdata = this;
+
+    printf("SDL sound driver initializing...\n");
+    printf("    --> (Frequency: %dhz, Latency: %dms)...",
+           audiospec.freq,
+           (audiospec.samples * 1000 / audiospec.freq));
+
+    if (SDL_OpenAudio(&audiospec, NULL) < 0)
+    {
+        printf("Failed\n");
+        return false;
     }
 
-    printf ("OK\n");
+    printf("OK\n");
 
-    S9xSetSamplesAvailableCallback (samples_available, NULL);
+    buffer.resize(gui_config->sound_buffer_size * audiospec.freq / 500);
+    buffer.time_ratio(1.0);
 
-    return TRUE;
+    S9xSetSamplesAvailableCallback(c_samples_available, this);
+
+    return true;
 }

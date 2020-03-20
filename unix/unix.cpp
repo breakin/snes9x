@@ -1,194 +1,8 @@
-/***********************************************************************************
-  Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
-
-  (c) Copyright 1996 - 2002  Gary Henderson (gary.henderson@ntlworld.com),
-                             Jerremy Koot (jkoot@snes9x.com)
-
-  (c) Copyright 2002 - 2004  Matthew Kendora
-
-  (c) Copyright 2002 - 2005  Peter Bortas (peter@bortas.org)
-
-  (c) Copyright 2004 - 2005  Joel Yliluoma (http://iki.fi/bisqwit/)
-
-  (c) Copyright 2001 - 2006  John Weidman (jweidman@slip.net)
-
-  (c) Copyright 2002 - 2006  funkyass (funkyass@spam.shaw.ca),
-                             Kris Bleakley (codeviolation@hotmail.com)
-
-  (c) Copyright 2002 - 2010  Brad Jorsch (anomie@users.sourceforge.net),
-                             Nach (n-a-c-h@users.sourceforge.net),
-
-  (c) Copyright 2002 - 2011  zones (kasumitokoduck@yahoo.com)
-
-  (c) Copyright 2006 - 2007  nitsuja
-
-  (c) Copyright 2009 - 2017  BearOso,
-                             OV2
-
-  (c) Copyright 2017         qwertymodo
-
-  (c) Copyright 2011 - 2017  Hans-Kristian Arntzen,
-                             Daniel De Matteis
-                             (Under no circumstances will commercial rights be given)
-
-
-  BS-X C emulator code
-  (c) Copyright 2005 - 2006  Dreamer Nom,
-                             zones
-
-  C4 x86 assembler and some C emulation code
-  (c) Copyright 2000 - 2003  _Demo_ (_demo_@zsnes.com),
-                             Nach,
-                             zsKnight (zsknight@zsnes.com)
-
-  C4 C++ code
-  (c) Copyright 2003 - 2006  Brad Jorsch,
-                             Nach
-
-  DSP-1 emulator code
-  (c) Copyright 1998 - 2006  _Demo_,
-                             Andreas Naive (andreasnaive@gmail.com),
-                             Gary Henderson,
-                             Ivar (ivar@snes9x.com),
-                             John Weidman,
-                             Kris Bleakley,
-                             Matthew Kendora,
-                             Nach,
-                             neviksti (neviksti@hotmail.com)
-
-  DSP-2 emulator code
-  (c) Copyright 2003         John Weidman,
-                             Kris Bleakley,
-                             Lord Nightmare (lord_nightmare@users.sourceforge.net),
-                             Matthew Kendora,
-                             neviksti
-
-  DSP-3 emulator code
-  (c) Copyright 2003 - 2006  John Weidman,
-                             Kris Bleakley,
-                             Lancer,
-                             z80 gaiden
-
-  DSP-4 emulator code
-  (c) Copyright 2004 - 2006  Dreamer Nom,
-                             John Weidman,
-                             Kris Bleakley,
-                             Nach,
-                             z80 gaiden
-
-  OBC1 emulator code
-  (c) Copyright 2001 - 2004  zsKnight,
-                             pagefault (pagefault@zsnes.com),
-                             Kris Bleakley
-                             Ported from x86 assembler to C by sanmaiwashi
-
-  SPC7110 and RTC C++ emulator code used in 1.39-1.51
-  (c) Copyright 2002         Matthew Kendora with research by
-                             zsKnight,
-                             John Weidman,
-                             Dark Force
-
-  SPC7110 and RTC C++ emulator code used in 1.52+
-  (c) Copyright 2009         byuu,
-                             neviksti
-
-  S-DD1 C emulator code
-  (c) Copyright 2003         Brad Jorsch with research by
-                             Andreas Naive,
-                             John Weidman
-
-  S-RTC C emulator code
-  (c) Copyright 2001 - 2006  byuu,
-                             John Weidman
-
-  ST010 C++ emulator code
-  (c) Copyright 2003         Feather,
-                             John Weidman,
-                             Kris Bleakley,
-                             Matthew Kendora
-
-  Super FX x86 assembler emulator code
-  (c) Copyright 1998 - 2003  _Demo_,
-                             pagefault,
-                             zsKnight
-
-  Super FX C emulator code
-  (c) Copyright 1997 - 1999  Ivar,
-                             Gary Henderson,
-                             John Weidman
-
-  Sound emulator code used in 1.5-1.51
-  (c) Copyright 1998 - 2003  Brad Martin
-  (c) Copyright 1998 - 2006  Charles Bilyue'
-
-  Sound emulator code used in 1.52+
-  (c) Copyright 2004 - 2007  Shay Green (gblargg@gmail.com)
-
-  S-SMP emulator code used in 1.54+
-  (c) Copyright 2016         byuu
-
-  SH assembler code partly based on x86 assembler code
-  (c) Copyright 2002 - 2004  Marcus Comstedt (marcus@mc.pp.se)
-
-  2xSaI filter
-  (c) Copyright 1999 - 2001  Derek Liauw Kie Fa
-
-  HQ2x, HQ3x, HQ4x filters
-  (c) Copyright 2003         Maxim Stepin (maxim@hiend3d.com)
-
-  NTSC filter
-  (c) Copyright 2006 - 2007  Shay Green
-
-  GTK+ GUI code
-  (c) Copyright 2004 - 2017  BearOso
-
-  Win32 GUI code
-  (c) Copyright 2003 - 2006  blip,
-                             funkyass,
-                             Matthew Kendora,
-                             Nach,
-                             nitsuja
-  (c) Copyright 2009 - 2017  OV2
-
-  Mac OS GUI code
-  (c) Copyright 1998 - 2001  John Stiles
-  (c) Copyright 2001 - 2011  zones
-
-  Libretro port
-  (c) Copyright 2011 - 2017  Hans-Kristian Arntzen,
-                             Daniel De Matteis
-                             (Under no circumstances will commercial rights be given)
-
-
-  Specific ports contains the works of other authors. See headers in
-  individual files.
-
-
-  Snes9x homepage: http://www.snes9x.com/
-
-  Permission to use, copy, modify and/or distribute Snes9x in both binary
-  and source form, for non-commercial purposes, is hereby granted without
-  fee, providing that this license information and copyright notice appear
-  with all copies and any derived work.
-
-  This software is provided 'as-is', without any express or implied
-  warranty. In no event shall the authors be held liable for any damages
-  arising from the use of this software or it's derivatives.
-
-  Snes9x is freeware for PERSONAL USE only. Commercial users should
-  seek permission of the copyright holders first. Commercial use includes,
-  but is not limited to, charging money for Snes9x or software derived from
-  Snes9x, including Snes9x or derivatives in commercial game bundles, and/or
-  using Snes9x as a promotion for your commercial product.
-
-  The copyright holders request that bug fixes and improvements to the code
-  should be forwarded to them so everyone can benefit from the modifications
-  in future versions.
-
-  Super NES and Super Nintendo Entertainment System are trademarks of
-  Nintendo Co., Limited and its subsidiary companies.
- ***********************************************************************************/
-
+/*****************************************************************************\
+     Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
+                This file is licensed under the Snes9x License.
+   For further information, consult the LICENSE file in the root directory.
+\*****************************************************************************/
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -306,6 +120,8 @@ struct SoundStatus
 	int32	play_position;
 };
 
+
+static int frame_advance = 0;
 static SUnixSettings	unixSettings;
 static SoundStatus		so;
 
@@ -350,7 +166,8 @@ static void * S9xProcessSound (void *);
 #endif
 #ifdef JOYSTICK_SUPPORT
 static void InitJoysticks (void);
-static void ReadJoysticks (void);
+static bool8 ReadJoysticks (void);
+void S9xLatchJSEvent();
 #endif
 
 
@@ -937,8 +754,7 @@ void S9xSyncSpeed (void)
 #ifndef NOSOUND
 	if (Settings.SoundSync)
 	{
-		while (!S9xSyncSound())
-			usleep(0);
+		return;
 	}
 #endif
 
@@ -1188,6 +1004,12 @@ s9xcommand_t S9xGetPortCommandT (const char *n)
 
 		return (cmd);
 	}
+        else if (!strcmp(n, "Advance"))
+        {
+                cmd.type = S9xButtonPort;
+                cmd.port[1] = 3;
+                return (cmd);
+        }
 
 	return (S9xGetDisplayCommandT(n));
 }
@@ -1220,6 +1042,9 @@ char * S9xGetPortCommandName (s9xcommand_t cmd)
 
 				case 2:
 					return (strdup("Rewind"));
+
+                                case 3:
+                                        return (strdup("Advance"));
 			}
 
 			break;
@@ -1260,6 +1085,9 @@ void S9xHandlePortCommand (s9xcommand_t cmd, int16 data1, int16 data2)
 				case 2:
 					rewinding = (bool8) data1;
 					break;
+
+                                case 3:
+                                        frame_advance = (bool8) data1;
 			}
 
 			break;
@@ -1378,8 +1206,10 @@ static void InitJoysticks (void)
 #endif
 }
 
-static void ReadJoysticks (void)
+static bool8 ReadJoysticks (void)
 {
+	// track if ANY joystick event happened this frame
+	int js_latch = FALSE;
 #ifdef JSIOCGVERSION
 	struct js_event	js_ev;
 
@@ -1393,6 +1223,7 @@ static void ReadJoysticks (void)
 			{
 				fprintf(stderr,"Joystick %d reconnected.\n",i);
 				js_unplugged[i] = FALSE;
+				js_latch = TRUE;
 			}
 		}
 
@@ -1406,12 +1237,14 @@ static void ReadJoysticks (void)
 				case JS_EVENT_AXIS:
 					S9xReportAxis(0x8000c000 | (i << 24) | js_ev.number, js_ev.value);
 					S9xReportAxis(0x80008000 | (i << 24) | (js_mod[i] << 16) | js_ev.number, js_ev.value);
+					js_latch = TRUE;
 					break;
 
 				case JS_EVENT_BUTTON:
 				case JS_EVENT_BUTTON | JS_EVENT_INIT:
 					S9xReportButton(0x80004000 | (i << 24) | js_ev.number, js_ev.value);
 					S9xReportButton(0x80000000 | (i << 24) | (js_mod[i] << 16) | js_ev.number, js_ev.value);
+					js_latch = TRUE;
 					break;
 			}
 		}
@@ -1433,54 +1266,90 @@ static void ReadJoysticks (void)
 				S9xReportButton(0x80004000 | (i << 24) | j, 0);
 				S9xReportButton(0x80000000 | (i << 24) | (js_mod[i] << 16) | j, 0);
 			}
+
+			js_latch = TRUE;
 		}
 	}
 #endif
+	return js_latch;
 }
 
 #endif
 
-static void SoundTrigger (void)
+void S9xSamplesAvailable(void *data)
 {
 #ifndef NOSOUND
-	S9xProcessSound(NULL);
-#endif
-}
 
-static void InitTimer (void)
-{
-#ifndef NOSOUND
-	struct itimerval	timeout;
-#endif
-	struct sigaction	sa;
+    audio_buf_info info;
+    int samples_to_write;
+    int bytes_to_write;
+    int bytes_written;
+	static uint8 *sound_buffer = NULL;
+	static int sound_buffer_size = 0;
 
-#ifdef USE_THREADS
-	if (unixSettings.ThreadSound)
-	{
-		pthread_mutex_init(&mutex, NULL);
-		pthread_create(&thread, NULL, S9xProcessSound, NULL);
-		return;
-	}
-#endif
 
-	sa.sa_handler = (SIG_PF) SoundTrigger;
+    ioctl(so.sound_fd, SNDCTL_DSP_GETOSPACE, &info);
 
-#ifdef SA_RESTART
-	sa.sa_flags = SA_RESTART;
-#else
-	sa.sa_flags = 0;
-#endif
+    if (Settings.DynamicRateControl)
+    {
+        S9xUpdateDynamicRate(info.bytes, so.fragment_size * 4);
+    }
 
-#ifndef NOSOUND // FIXME: Kludge to get calltree running. Remove later.
-	sigemptyset(&sa.sa_mask);
-	sigaction(SIGALRM, &sa, NULL);
+    samples_to_write = S9xGetSampleCount();
 
-	timeout.it_interval.tv_sec  = 0;
-	timeout.it_interval.tv_usec = 10000;
-	timeout.it_value.tv_sec     = 0;
-	timeout.it_value.tv_usec    = 10000;
-	if (setitimer(ITIMER_REAL, &timeout, NULL) < 0)
-		perror("setitimer");
+    if (Settings.DynamicRateControl && !Settings.SoundSync)
+    {
+        // Using rate control, we should always keep the emulator's sound buffers empty to
+        // maintain an accurate measurement.
+        if (samples_to_write > (info.bytes >> 1))
+        {
+            S9xClearSamples();
+            return;
+        }
+    }
+
+    if (Settings.SoundSync && !Settings.TurboMode && !Settings.Mute)
+    {
+        while (info.bytes >> 1 < samples_to_write)
+        {
+            int usec_to_sleep = ((samples_to_write >> 1) - (info.bytes >> 2)) * 10000 /
+                                (Settings.SoundPlaybackRate / 100);
+            usleep(usec_to_sleep > 0 ? usec_to_sleep : 0);
+            ioctl(so.sound_fd, SNDCTL_DSP_GETOSPACE, &info);
+        }
+    }
+    else
+    {
+        samples_to_write = MIN(info.bytes >> 1, samples_to_write) & ~1;
+    }
+
+    if (samples_to_write < 0)
+        return;
+
+    if (sound_buffer_size < samples_to_write * 2)
+    {
+        sound_buffer = (uint8 *)realloc(sound_buffer, samples_to_write * 2);
+        sound_buffer_size = samples_to_write * 2;
+    }
+
+    S9xMixSamples(sound_buffer, samples_to_write);
+
+    bytes_written = 0;
+    bytes_to_write = samples_to_write * 2;
+
+    while (bytes_to_write > bytes_written)
+    {
+        int result;
+
+        result = write(so.sound_fd,
+                       ((char *)sound_buffer) + bytes_written,
+                       bytes_to_write - bytes_written);
+
+        if (result < 0)
+            break;
+
+        bytes_written += result;
+    }
 #endif
 }
 
@@ -1496,15 +1365,15 @@ bool8 S9xOpenSoundDevice (void)
 		return (FALSE);
 	}
 
-	J = log2(unixSettings.SoundFragmentSize) | (3 << 16);
+	J = log2(unixSettings.SoundFragmentSize) | (4 << 16);
 	if (ioctl(so.sound_fd, SNDCTL_DSP_SETFRAGMENT, &J) == -1)
 		return (FALSE);
 
-	J = K = Settings.SixteenBitSound ? AFMT_S16_NE : AFMT_U8;
+	J = K = AFMT_S16_NE;
 	if (ioctl(so.sound_fd, SNDCTL_DSP_SETFMT,      &J) == -1 || J != K)
 		return (FALSE);
 
-	J = K = Settings.Stereo ? 1 : 0;
+	J = K = 1;
 	if (ioctl(so.sound_fd, SNDCTL_DSP_STEREO,      &J) == -1 || J != K)
 		return (FALSE);
 
@@ -1520,89 +1389,13 @@ bool8 S9xOpenSoundDevice (void)
 	printf("fragment size: %d\n", J);
 #endif
 
+	S9xSetSamplesAvailableCallback(S9xSamplesAvailable, NULL);
+
 	return (TRUE);
 }
 
 #ifndef NOSOUND
 
-static void * S9xProcessSound (void *)
-{
-	// If threads in use, this is to loop indefinitely.
-	// If not, this will be called by timer.
-
-	audio_buf_info	info;
-	if (!unixSettings.ThreadSound && (ioctl(so.sound_fd, SNDCTL_DSP_GETOSPACE, &info) == -1 || info.bytes < (int) so.fragment_size))
-		return (NULL);
-
-#ifdef USE_THREADS
-	do
-	{
-#endif
-
-	int	sample_count = so.fragment_size;
-	if (Settings.SixteenBitSound)
-		sample_count >>= 1;
-
-#ifdef USE_THREADS
-	if (unixSettings.ThreadSound)
-		pthread_mutex_lock(&mutex);
-	else
-#endif
-	if (block_signal)
-		return (NULL);
-
-	block_generate_sound = TRUE;
-
-	if (so.samples_mixed_so_far < sample_count)
-	{
-		unsigned	ofs = so.play_position + (Settings.SixteenBitSound ? (so.samples_mixed_so_far << 1) : so.samples_mixed_so_far);
-		S9xMixSamples(Buf + (ofs & SOUND_BUFFER_SIZE_MASK), sample_count - so.samples_mixed_so_far);
-		so.samples_mixed_so_far = sample_count;
-	}
-
-	unsigned	bytes_to_write = sample_count;
-	if (Settings.SixteenBitSound)
-		bytes_to_write <<= 1;
-
-	unsigned	byte_offset = so.play_position;
-	so.play_position += bytes_to_write;
-	so.play_position &= SOUND_BUFFER_SIZE_MASK;
-
-#ifdef USE_THREADS
-	if (unixSettings.ThreadSound)
-		pthread_mutex_unlock(&mutex);
-#endif
-
-	block_generate_sound = FALSE;
-
-	for (;;)
-	{
-		int	I = bytes_to_write;
-		if (byte_offset + I > SOUND_BUFFER_SIZE)
-			I = SOUND_BUFFER_SIZE - byte_offset;
-		if (I == 0)
-			break;
-
-		I = write(so.sound_fd, (char *) Buf + byte_offset, I);
-		if (I > 0)
-		{
-			bytes_to_write -= I;
-			byte_offset += I;
-			byte_offset &= SOUND_BUFFER_SIZE_MASK;
-		}
-		else
-		if (I < 0 && errno != EINTR)
-			break;
-	}
-
-	so.samples_mixed_so_far -= sample_count;
-
-#ifdef USE_THREADS
-	} while (unixSettings.ThreadSound);
-#endif
-
-	return (NULL);
-}
 
 #endif
 
@@ -1619,9 +1412,8 @@ void S9xExit (void)
 #endif
 
 	Memory.SaveSRAM(S9xGetFilename(".srm", SRAM_DIR));
-	S9xSaveCheatFile(S9xGetFilename(".cht", CHEAT_DIR));
 	S9xResetSaveTimer(FALSE);
-
+	S9xSaveCheatFile(S9xGetFilename(".cht", CHEAT_DIR));
 	S9xUnmapAllControls();
 	S9xDeinitDisplay();
 	Memory.Deinit();
@@ -1657,8 +1449,8 @@ int main (int argc, char **argv)
 	Settings.FrameTimeNTSC = 16667;
 	Settings.SixteenBitSound = TRUE;
 	Settings.Stereo = TRUE;
-	Settings.SoundPlaybackRate = 32000;
-	Settings.SoundInputRate = 32000;
+	Settings.SoundPlaybackRate = 48000;
+	Settings.SoundInputRate = 31950;
 	Settings.SupportHiRes = TRUE;
 	Settings.Transparency = TRUE;
 	Settings.AutoDisplayMessages = TRUE;
@@ -1698,6 +1490,7 @@ int main (int argc, char **argv)
 
 	S9xLoadConfigFiles(argv, argc);
 	rom_filename = S9xParseArgs(argv, argc);
+	S9xDeleteCheats();
 
 	make_snes9x_dirs();
 
@@ -1709,14 +1502,10 @@ int main (int argc, char **argv)
 		exit(1);
 	}
 
-	S9xInitSound(unixSettings.SoundBufferSize, 0);
+	S9xInitSound(0);
 	S9xSetSoundMute(TRUE);
 
 	S9xReportControllers();
-
-#ifdef GFX_MULTI_FORMAT
-	S9xSetRenderPixelFormat(RGB565);
-#endif
 
 	uint32	saved_flags = CPU.Flags;
 	bool8	loaded = FALSE;
@@ -1785,9 +1574,17 @@ int main (int argc, char **argv)
 		exit(1);
 	}
 
+	S9xDeleteCheats();
+	S9xCheatsEnable();
 	NSRTControllerSetup();
 	Memory.LoadSRAM(S9xGetFilename(".srm", SRAM_DIR));
-	S9xLoadCheatFile(S9xGetFilename(".cht", CHEAT_DIR));
+
+	if (Settings.ApplyCheats)
+	{
+		S9xLoadCheatFile(S9xGetFilename(".cht", CHEAT_DIR));
+	}
+
+	S9xParseArgsForCheats(argv, argc);
 
 	CPU.Flags = saved_flags;
 	Settings.StopEmulation = FALSE;
@@ -1882,7 +1679,6 @@ int main (int argc, char **argv)
 	uint32	JoypadSkip = 0;
 #endif
 
-	InitTimer();
 	S9xSetSoundMute(FALSE);
 
 #ifdef NETPLAY_SUPPORT
@@ -1930,12 +1726,26 @@ int main (int argc, char **argv)
 	#endif
 		{
 			if(rewinding)
+			{
+				uint16 joypads[8];
+				for (int i = 0; i < 8; i++)
+					joypads[i] = MovieGetJoypad(i);
+
 				rewinding = stateMan.pop();
+
+				for (int i = 0; i < 8; i++)
+					MovieSetJoypad (i, joypads[i]);
+			}
 			else if(IPPU.TotalEmulatedFrames % unixSettings.rewindGranularity == 0)
 				stateMan.push();
 
 			S9xMainLoop();
 		}
+                if (Settings.Paused && frame_advance)
+                {
+                        S9xMainLoop();
+                        frame_advance = 0;
+                }
 
 	#ifdef NETPLAY_SUPPORT
 		if (NP_Activated)
@@ -1965,7 +1775,11 @@ int main (int argc, char **argv)
 
 	#ifdef JOYSTICK_SUPPORT
 		if (unixSettings.JoystickEnabled && (JoypadSkip++ & 1) == 0)
-			ReadJoysticks();
+		{
+			if (ReadJoysticks() == TRUE) {
+				S9xLatchJSEvent();
+			}
+		}
 	#endif
 
 		S9xProcessEvents(FALSE);

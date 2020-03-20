@@ -147,6 +147,9 @@
     <ClInclude Include="..\tile.h">
       <Filter>s9x-source</Filter>
     </ClInclude>
+    <ClInclude Include="..\tileimpl.h">
+      <Filter>s9x-source</Filter>
+    </ClInclude>
     <ClInclude Include="..\apu\apu.h">
       <Filter>s9x-source\APU</Filter>
     </ClInclude>
@@ -181,6 +184,12 @@
       <Filter>libretro</Filter>
     </ClInclude>
     <ClInclude Include="..\msu1.h">
+      <Filter>s9x-source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\bml.h">
+      <Filter>s9x-source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sha256.h">
       <Filter>s9x-source</Filter>
     </ClInclude>
   </ItemGroup>
@@ -323,6 +332,15 @@
     <ClCompile Include="..\tile.cpp">
       <Filter>s9x-source</Filter>
     </ClCompile>
+    <ClCompile Include="..\tileimpl-n1x1.cpp">
+      <Filter>s9x-source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tileimpl-n2x1.cpp">
+      <Filter>s9x-source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tileimpl-h2x1.cpp">
+      <Filter>s9x-source</Filter>
+    </ClCompile>
     <ClCompile Include="..\apu\apu.cpp">
       <Filter>s9x-source\APU</Filter>
     </ClCompile>
@@ -342,6 +360,12 @@
       <Filter>libretro</Filter>
     </ClCompile>
     <ClCompile Include="..\msu1.cpp">
+      <Filter>s9x-source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bml.cpp">
+      <Filter>s9x-source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sha256.cpp">
       <Filter>s9x-source</Filter>
     </ClCompile>
   </ItemGroup>

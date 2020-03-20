@@ -1,5 +1,10 @@
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
+/*****************************************************************************\
+     Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
+                This file is licensed under the Snes9x License.
+   For further information, consult the LICENSE file in the root directory.
+\*****************************************************************************/
+
+#include "gtk_2_3_compat.h"
 #include <X11/extensions/XShm.h>
 #include <X11/extensions/Xv.h>
 #include <X11/extensions/Xvlib.h>
@@ -32,69 +37,56 @@ S9xXVDisplayDriver::S9xXVDisplayDriver (Snes9xWindow *window,
     display =
         gdk_x11_display_get_xdisplay (gtk_widget_get_display (drawing_area));
     last_known_width = last_known_height = -1;
-
-    return;
 }
 
 void
 S9xXVDisplayDriver::resize_window (int width, int height)
 {
-    g_object_unref (gdk_window);
-    XDestroyWindow (display, xwindow);
+    gdk_window_destroy (gdk_window);
     create_window (width, height);
-
-    return;
 }
 
 void
 S9xXVDisplayDriver::create_window (int width, int height)
 {
-    XSetWindowAttributes window_attr;
+    GdkWindowAttr window_attr;
+    memset (&window_attr, 0, sizeof (GdkWindowAttr));
+    window_attr.event_mask = GDK_EXPOSURE_MASK | GDK_STRUCTURE_MASK;
+    window_attr.width = width;
+    window_attr.height = height;
+    window_attr.x = 0;
+    window_attr.y = 0;
+    window_attr.wclass = GDK_INPUT_OUTPUT;
+    window_attr.window_type = GDK_WINDOW_CHILD;
+    window_attr.visual = gdk_x11_screen_lookup_visual (gtk_widget_get_screen (drawing_area), vi->visualid);
 
-    window_attr.colormap = xcolormap;
-    window_attr.border_pixel = 0;
-    window_attr.event_mask = StructureNotifyMask | ExposureMask;
-    window_attr.background_pixmap = None;
+    gdk_window = gdk_window_new (gtk_widget_get_window (drawing_area),
+                                 &window_attr,
+                                 GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL);
+    gdk_window_set_user_data (gdk_window, (gpointer) drawing_area);
 
-    xwindow = XCreateWindow (display,
-                             GDK_COMPAT_WINDOW_XID (gtk_widget_get_window (drawing_area)),
-                             0,
-                             0,
-                             width,
-                             height,
-                             0,
-                             vi->depth,
-                             InputOutput,
-                             vi->visual,
-                             CWColormap | CWBorderPixel | CWBackPixmap | CWEventMask,
-                             &window_attr);
-    XSync (display, False);
+    gdk_window_show (gdk_window);
+    xwindow = gdk_x11_window_get_xid (gdk_window);
 
     output_window_width = width;
     output_window_height = height;
-
-    XMapWindow (display, xwindow);
-    XSync (display, False);
-
-#if USE_GTK3
-    gdk_window = gdk_x11_window_foreign_new_for_display (gtk_widget_get_display (drawing_area), xwindow);
-#else
-    gdk_window = gdk_window_foreign_new (xwindow);
-#endif
-    XSync (display, False);
-
-    gdk_window_set_user_data (gdk_window, drawing_area);
 }
 
 void
-S9xXVDisplayDriver::update (int width, int height)
+S9xXVDisplayDriver::update (int width, int height, int yoffset)
 {
     int   current_width, current_height, final_pitch;
     uint8 *final_buffer;
-    int   dst_x, dst_y, dst_width, dst_height;
     GtkAllocation allocation;
 
     gtk_widget_get_allocation (drawing_area, &allocation);
+
+    if (output_window_width  != allocation.width ||
+        output_window_height != allocation.height)
+    {
+        resize_window (allocation.width, allocation.height);
+    }
+
 #if GTK_CHECK_VERSION(3,10,0)
     int gdk_scale_factor = gdk_window_get_scale_factor (gdk_window);
 
@@ -106,18 +98,14 @@ S9xXVDisplayDriver::update (int width, int height)
     current_width = allocation.width;
     current_height = allocation.height;
 
-    if (output_window_width  != current_width ||
-        output_window_height != current_height)
-    {
-        resize_window (current_width, current_height);
-    }
-
     if (config->scale_method > 0)
     {
         uint8 *src_buffer = (uint8 *) padded_buffer[0];
         uint8 *dst_buffer = (uint8 *) padded_buffer[1];
         int   src_pitch = image_width * image_bpp;
         int   dst_pitch = scaled_max_width * image_bpp;
+
+        src_buffer += (src_pitch * yoffset);
 
         S9xFilter (src_buffer,
                    src_pitch,
@@ -133,6 +121,7 @@ S9xXVDisplayDriver::update (int width, int height)
     {
         final_buffer = (uint8 *) padded_buffer[0];
         final_pitch = image_width * image_bpp;
+        final_buffer += (final_pitch * yoffset);
     }
 
     update_image_size (width, height);
@@ -160,14 +149,12 @@ S9xXVDisplayDriver::update (int width, int height)
                         bpp);
     }
 
-    dst_x = width; dst_y = height;
-    dst_width = current_width; dst_height = current_height;
-    S9xApplyAspect (dst_x, dst_y, dst_width, dst_height);
+    S9xRect dst = S9xApplyAspect(width, height, current_width, current_height);
 
-    if (last_known_width != dst_width || last_known_height != dst_height)
+    if (last_known_width != dst.w || last_known_height != dst.h)
     {
-        last_known_width = dst_width;
-        last_known_height = dst_height;
+        last_known_width = dst.w;
+        last_known_height = dst.h;
         clear ();
     }
 
@@ -180,17 +167,15 @@ S9xXVDisplayDriver::update (int width, int height)
                    0,
                    width,
                    height,
-                   dst_x,
-                   dst_y,
-                   dst_width,
-                   dst_height,
+                   dst.x,
+                   dst.y,
+                   dst.w,
+                   dst.h,
                    False);
 
-    top_level->set_mouseable_area (dst_x, dst_y, dst_width, dst_height);
+    top_level->set_mouseable_area (dst.x, dst.y, dst.w, dst.h);
 
     XSync (display, False);
-
-    return;
 }
 
 void
@@ -229,7 +214,7 @@ S9xXVDisplayDriver::update_image_size (int width, int height)
             }
         }
 
-        shm.readOnly = FALSE;
+        shm.readOnly = false;
 
         xv_image->data = shm.shmaddr;
 
@@ -238,34 +223,19 @@ S9xXVDisplayDriver::update_image_size (int width, int height)
         desired_width = width;
         desired_height = height;
     }
-
-    return;
 }
 
 int
-S9xXVDisplayDriver::init (void)
+S9xXVDisplayDriver::init ()
 {
-    int                 padding;
     int                 depth = 0, num_formats, num_attrs, highest_formats = 0;
     XvImageFormatValues *formats = NULL;
     XvAdaptorInfo       *adaptors;
     XvAttribute         *port_attr;
     VisualID            visualid = None;
-    unsigned int        num_adaptors;
+    unsigned int        num_adaptors = 0;
     GdkScreen           *screen;
     GdkWindow           *root;
-
-    buffer[0] = malloc (image_padded_size);
-    buffer[1] = malloc (scaled_padded_size);
-
-    padding = (image_padded_size - image_size) / 2;
-    padded_buffer[0] = (void *) (((uint8 *) buffer[0]) + padding);
-
-    padding = (scaled_padded_size - scaled_size) / 2;
-    padded_buffer[1] = (void *) (((uint8 *) buffer[1]) + padding);
-
-    memset (buffer[0], 0, image_padded_size);
-    memset (buffer[1], 0, scaled_padded_size);
 
     /* Setup XV */
     gtk_widget_realize (drawing_area);
@@ -275,10 +245,13 @@ S9xXVDisplayDriver::init (void)
     root = gdk_screen_get_root_window (screen);
 
     xv_portid = -1;
-    XvQueryAdaptors (display,
-                     GDK_COMPAT_WINDOW_XID (root),
-                     &num_adaptors,
-                     &adaptors);
+    if ((XvQueryAdaptors (display,
+                          gdk_x11_window_get_xid (root),
+                          &num_adaptors,
+                          &adaptors)) != Success)
+    {
+        fprintf (stderr, "No Xv compatible adaptors.\n");
+    }
 
 
     for (int i = 0; i < (int) num_adaptors; i++)
@@ -325,7 +298,7 @@ S9xXVDisplayDriver::init (void)
     }
 
     /* Try to find an RGB format */
-    format = FOURCC_YUY2;
+    format = -1;
     bpp = 100;
 
     formats = XvListImageFormats (display,
@@ -358,34 +331,35 @@ S9xXVDisplayDriver::init (void)
 
                 /* on big-endian Xv still seems to like LSB order */
                 if (config->force_inverted_byte_order)
-                    S9xSetEndianess (ENDIAN_MSB);
+                    S9xSetEndianess (ENDIAN_SWAPPED);
                 else
-                    S9xSetEndianess (ENDIAN_LSB);
+                    S9xSetEndianess (ENDIAN_NORMAL);
             }
         }
     }
 
-    if (format == FOURCC_YUY2)
+    if (format == -1)
     {
         for (int i = 0; i < num_formats; i++)
         {
             if (formats[i].id == FOURCC_YUY2)
             {
+                format = formats[i].id;
                 depth = formats[i].depth;
 
                 if (formats[i].byte_order == LSBFirst)
                 {
                     if (config->force_inverted_byte_order)
-                        S9xSetEndianess (ENDIAN_MSB);
+                        S9xSetEndianess (ENDIAN_SWAPPED);
                     else
-                        S9xSetEndianess (ENDIAN_LSB);
+                        S9xSetEndianess (ENDIAN_NORMAL);
                 }
                 else
                 {
                     if (config->force_inverted_byte_order)
-                        S9xSetEndianess (ENDIAN_LSB);
+                        S9xSetEndianess (ENDIAN_NORMAL);
                     else
-                        S9xSetEndianess (ENDIAN_MSB);
+                        S9xSetEndianess (ENDIAN_SWAPPED);
                 }
 
                 break;
@@ -395,6 +369,12 @@ S9xXVDisplayDriver::init (void)
 
     free (formats);
 
+    if (format == -1)
+    {
+        fprintf (stderr, "No compatible formats found for Xv.\n");
+        return -1;
+    }
+
     /* Build a table for yuv conversion */
     if (format == FOURCC_YUY2)
     {
@@ -403,9 +383,9 @@ S9xXVDisplayDriver::init (void)
             int r, g, b;
             int y, u, v;
 
-            r = (color & 0x7c00) >> 7;
-            g = (color & 0x03e0) >> 2;
-            b = (color & 0x001F) << 3;
+            r = ((color & 0xf800) >> 8) | ((color >> 13) & 0x7);
+            g = ((color & 0x07e0) >> 3) | ((color >> 9 ) & 0x3);
+            b = ((color & 0x001F) << 3) | ((color >> 3 ) & 0x7);
 
             y = (int) ((0.257  * ((double) r)) + (0.504  * ((double) g)) + (0.098  * ((double) b)) + 16.0);
             u = (int) ((-0.148 * ((double) r)) + (-0.291 * ((double) g)) + (0.439  * ((double) b)) + 128.0);
@@ -441,7 +421,7 @@ S9xXVDisplayDriver::init (void)
     }
 
     xcolormap = XCreateColormap (display,
-                                GDK_COMPAT_WINDOW_XID (gtk_widget_get_window (drawing_area)),
+                                gdk_x11_window_get_xid (gtk_widget_get_window (drawing_area)),
                                 vi->visual,
                                 AllocNone);
 
@@ -465,7 +445,7 @@ S9xXVDisplayDriver::init (void)
         return -1;
     }
 
-    shm.readOnly = FALSE;
+    shm.readOnly = false;
 
     xv_image->data = shm.shmaddr;
 
@@ -473,6 +453,15 @@ S9xXVDisplayDriver::init (void)
 
     desired_width = scaled_max_width;
     desired_height = scaled_max_width;
+
+    buffer[0] = new uint8_t[image_padded_size];
+    buffer[1] = new uint8_t[scaled_padded_size];
+
+    padded_buffer[0] = &buffer[0][image_padded_offset];
+    padded_buffer[1] = &buffer[1][scaled_padded_offset];
+
+    memset (buffer[0], 0, image_padded_size);
+    memset (buffer[1], 0, scaled_padded_size);
 
     clear_buffers ();
 
@@ -484,33 +473,29 @@ S9xXVDisplayDriver::init (void)
 }
 
 void
-S9xXVDisplayDriver::deinit (void)
+S9xXVDisplayDriver::deinit ()
 {
+    gdk_window_destroy (gdk_window);
+
     XShmDetach (display, &shm);
     XSync (display, 0);
 
     XFreeColormap (display, xcolormap);
     XFree (vi);
 
-    g_object_unref (gdk_window);
-    XDestroyWindow (display, xwindow);
-
-    free (buffer[0]);
-    free (buffer[1]);
+    delete[] buffer[0];
+    delete[] buffer[1];
 
     shmctl (shm.shmid, IPC_RMID, 0);
     shmdt (shm.shmaddr);
 
     padded_buffer[0] = NULL;
     padded_buffer[1] = NULL;
-
-    return;
 }
 
 void
-S9xXVDisplayDriver::clear (void)
+S9xXVDisplayDriver::clear ()
 {
-    int  x, y, w, h;
     int  width, height;
     GtkAllocation allocation;
     GC   xgc = XDefaultGC (display, XDefaultScreen (display));
@@ -533,51 +518,46 @@ S9xXVDisplayDriver::clear (void)
     }
 
     /* Get width of modified display */
-    x = window->last_width;
-    y = window->last_height;
-    get_filter_scale (x, y);
-    w = width;
-    h = height;
-    S9xApplyAspect (x, y, w, h);
+    S9xRect dst;
+    dst.w = window->last_width;
+    dst.h = window->last_height;
+    get_filter_scale (dst.w, dst.h);
+    dst = S9xApplyAspect (dst.w, dst.h, width, height);
 
-    if (x > 0)
+    if (dst.x > 0)
     {
-        XFillRectangle (display, xwindow, xgc, 0, y, x, h);
+        XFillRectangle (display, xwindow, xgc, 0, dst.y, dst.x, dst.h);
     }
-    if (x + w < width)
+    if (dst.x + dst.w < width)
     {
-        XFillRectangle (display, xwindow, xgc, x + w, y, width - (x + w), h);
+        XFillRectangle (display, xwindow, xgc, dst.x + dst.w, dst.y, width - (dst.x + dst.w), dst.h);
     }
-    if (y > 0)
+    if (dst.y > 0)
     {
-        XFillRectangle (display, xwindow, xgc, 0, 0, width, y);
+        XFillRectangle (display, xwindow, xgc, 0, 0, width, dst.y);
     }
-    if (y + h < height)
+    if (dst.y + dst.h < height)
     {
-        XFillRectangle (display, xwindow, xgc, 0, y + h, width, height - (y + h));
+        XFillRectangle (display, xwindow, xgc, 0, dst.y + dst.h, width, height - (dst.y + dst.h));
     }
 
     XSync (display, False);
-
-    return;
 }
 
 void
 S9xXVDisplayDriver::refresh (int width, int height)
 {
     clear ();
-
-    return;
 }
 
 uint16 *
-S9xXVDisplayDriver::get_next_buffer (void)
+S9xXVDisplayDriver::get_next_buffer ()
 {
     return (uint16 *) padded_buffer[0];
 }
 
 uint16 *
-S9xXVDisplayDriver::get_current_buffer (void)
+S9xXVDisplayDriver::get_current_buffer ()
 {
     return get_next_buffer ();
 }
@@ -585,14 +565,11 @@ S9xXVDisplayDriver::get_current_buffer (void)
 void
 S9xXVDisplayDriver::push_buffer (uint16 *src)
 {
-    memmove (GFX.Screen, src, image_size);
-    update (window->last_width, window->last_height);
-
-    return;
+    memmove (GFX.Screen, src, image_size * image_bpp);
 }
 
 void
-S9xXVDisplayDriver::clear_buffers (void)
+S9xXVDisplayDriver::clear_buffers ()
 {
     uint32 black;
     uint8  *color;
@@ -618,12 +595,10 @@ S9xXVDisplayDriver::clear_buffers (void)
     {
         memset (xv_image->data, 0, xv_image->data_size);
     }
-
-    return;
 }
 
 int
-S9xXVDisplayDriver::query_availability (void)
+S9xXVDisplayDriver::query_availability ()
 {
     unsigned int p_version,
                  p_release,
@@ -631,6 +606,9 @@ S9xXVDisplayDriver::query_availability (void)
                  p_event_base,
                  p_error_base;
     Display *display = GDK_DISPLAY_XDISPLAY (gdk_display_get_default ());
+
+    if (!display)
+        return 0;
 
     /* Test if XV and SHM are feasible */
     if (!XShmQueryExtension (display))
@@ -649,10 +627,4 @@ S9xXVDisplayDriver::query_availability (void)
     }
 
     return 1;
-}
-
-void
-S9xXVDisplayDriver::reconfigure (int width, int height)
-{
-    return;
 }

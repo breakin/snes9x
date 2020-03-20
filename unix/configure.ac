@@ -1,6 +1,6 @@
 AC_PREREQ([2.60])
-AC_INIT([Snes9x], [1.55], [], [snes9x])
-AC_REVISION([$Revision: 1.55 $])
+AC_INIT([Snes9x], [1.60], [], [snes9x])
+AC_REVISION([$Revision: 1.60 $])
 
 AC_CONFIG_SRCDIR([unix.cpp])
 
@@ -56,18 +56,6 @@ AC_DEFUN([AC_S9X_COMPILER_FLAG],
 # *** Execution begins here ***
 # *****************************
 
-# Remove -g and -O2 flags manually.
-
-if test "x$CFLAGS" != "x"; then
-	CFLAGS="`echo \"$CFLAGS\" | sed -e 's/-g//'`"
-	CFLAGS="`echo \"$CFLAGS\" | sed -e 's/-O2//'`"
-fi
-
-if test "x$CXXFLAGS" != "x"; then
-	CXXFLAGS="`echo \"$CXXFLAGS\" | sed -e 's/-g//'`"
-	CXXFLAGS="`echo \"$CXXFLAGS\" | sed -e 's/-O2//'`"
-fi
-
 # Test what compiler flags we should use.
 
 AC_ARG_ENABLE([debug],
@@ -105,6 +93,45 @@ AC_S9X_COMPILER_FLAG([-pedantic],             [pedantic])
 AC_S9X_COMPILER_FLAG([-Wall],                 [Wall])
 AC_S9X_COMPILER_FLAG([-W],                    [W])
 AC_S9X_COMPILER_FLAG([-Wno-unused-parameter], [Wno_unused_parameter])
+
+# Enable SSE4.1
+AC_ARG_ENABLE([sse41],
+	[AS_HELP_STRING([--enable-sse41],
+		[enable SSE4.1 if available (default: no)])],
+	[], [enable_sse41="no"])
+
+if test "x$enable_sse41" = "xyes"; then
+	AC_S9X_COMPILER_FLAG([-msse4.1], [sse41])
+	if test "x$snes9x_cv_option_sse41" != "xyes"; then
+		enable_sse41="no"
+	fi
+fi
+
+# Enable AVX2
+AC_ARG_ENABLE([avx2],
+	[AS_HELP_STRING([--enable-avx2],
+		[enable AVX2 if available (default: no)])],
+	[], [enable_avx2="no"])
+
+if test "x$enable_avx2" = "xyes"; then
+	AC_S9X_COMPILER_FLAG([-mavx2], [avx2])
+	if test "x$snes9x_cv_option_avx2" != "xyes"; then
+		enable_avx2="no"
+	fi
+fi
+
+# Enable ARM NEON
+AC_ARG_ENABLE([neon],
+	[AS_HELP_STRING([--enable-neon],
+		[enable NEON if available (default: no)])],
+	[], [enable_neon="no"])
+
+if test "x$enable_neon" = "xyes"; then
+	AC_S9X_COMPILER_FLAG([-mfpu=neon], [neon])
+	if test "x$snes9x_cv_option_neon" != "xyes"; then
+		enable_neon="no"
+	fi
+fi
 
 # Check if the OS is Linux.
 
@@ -418,6 +445,22 @@ if test "x$enable_xvideo" = "xyes"; then
 	])
 fi
 
+# Check if we can build with Xinerama multi-monitor support
+AC_ARG_ENABLE([xinerama],
+	[AS_HELP_STRING([--enable-xinerama],
+		[enable Xinerama if available (default: yes)])],
+	[], [enable_xinerama="yes"])
+
+if test "x$enable_xinerama" = "xyes"; then
+	enable_xinerama="no"
+	AC_CHECK_HEADER([X11/extensions/Xinerama.h],
+	[
+		enable_xinerama="yes"
+		S9XLIBS="$S9XLIBS -lXinerama"
+		S9XDEFS="$S9XDEFS -DUSE_XINERAMA"
+	])
+fi
+
 # Check if we have sound code for this platform.
 
 AC_ARG_ENABLE([sound],
@@ -448,7 +491,7 @@ fi
 
 # Output.
 
-S9XFLGS="$CXXFLAGS $CPPFLAGS $S9XFLGS"
+S9XFLGS="$CXXFLAGS $CPPFLAGS $LDFLAGS $S9XFLGS"
 S9XLIBS="$LIBS $S9XLIBS"
 
 S9XFLGS="`echo \"$S9XFLGS\" | sed -e 's/  */ /g'`"
@@ -483,6 +526,7 @@ libs................. $S9XLIBS
 
 features:
 Xvideo support....... $enable_xvideo
+Xinerama support..... $enable_xinerama
 sound support........ $enable_sound
 screenshot support... $enable_screenshot
 netplay support...... $enable_netplay
@@ -491,6 +535,9 @@ GZIP support......... $enable_gzip
 ZIP support.......... $enable_zip
 SYSTEM_ZIP........... $with_system_zip
 JMA support.......... $enable_jma
+SSE4.1............... $enable_sse41
+AVX2................. $enable_avx2
+NEON................. $enable_neon
 debugger............. $enable_debugger
 
 EOF

@@ -1,194 +1,8 @@
-/***********************************************************************************
-  Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
-
-  (c) Copyright 1996 - 2002  Gary Henderson (gary.henderson@ntlworld.com),
-                             Jerremy Koot (jkoot@snes9x.com)
-
-  (c) Copyright 2002 - 2004  Matthew Kendora
-
-  (c) Copyright 2002 - 2005  Peter Bortas (peter@bortas.org)
-
-  (c) Copyright 2004 - 2005  Joel Yliluoma (http://iki.fi/bisqwit/)
-
-  (c) Copyright 2001 - 2006  John Weidman (jweidman@slip.net)
-
-  (c) Copyright 2002 - 2006  funkyass (funkyass@spam.shaw.ca),
-                             Kris Bleakley (codeviolation@hotmail.com)
-
-  (c) Copyright 2002 - 2010  Brad Jorsch (anomie@users.sourceforge.net),
-                             Nach (n-a-c-h@users.sourceforge.net),
-
-  (c) Copyright 2002 - 2011  zones (kasumitokoduck@yahoo.com)
-
-  (c) Copyright 2006 - 2007  nitsuja
-
-  (c) Copyright 2009 - 2017  BearOso,
-                             OV2
-
-  (c) Copyright 2017         qwertymodo
-
-  (c) Copyright 2011 - 2017  Hans-Kristian Arntzen,
-                             Daniel De Matteis
-                             (Under no circumstances will commercial rights be given)
-
-
-  BS-X C emulator code
-  (c) Copyright 2005 - 2006  Dreamer Nom,
-                             zones
-
-  C4 x86 assembler and some C emulation code
-  (c) Copyright 2000 - 2003  _Demo_ (_demo_@zsnes.com),
-                             Nach,
-                             zsKnight (zsknight@zsnes.com)
-
-  C4 C++ code
-  (c) Copyright 2003 - 2006  Brad Jorsch,
-                             Nach
-
-  DSP-1 emulator code
-  (c) Copyright 1998 - 2006  _Demo_,
-                             Andreas Naive (andreasnaive@gmail.com),
-                             Gary Henderson,
-                             Ivar (ivar@snes9x.com),
-                             John Weidman,
-                             Kris Bleakley,
-                             Matthew Kendora,
-                             Nach,
-                             neviksti (neviksti@hotmail.com)
-
-  DSP-2 emulator code
-  (c) Copyright 2003         John Weidman,
-                             Kris Bleakley,
-                             Lord Nightmare (lord_nightmare@users.sourceforge.net),
-                             Matthew Kendora,
-                             neviksti
-
-  DSP-3 emulator code
-  (c) Copyright 2003 - 2006  John Weidman,
-                             Kris Bleakley,
-                             Lancer,
-                             z80 gaiden
-
-  DSP-4 emulator code
-  (c) Copyright 2004 - 2006  Dreamer Nom,
-                             John Weidman,
-                             Kris Bleakley,
-                             Nach,
-                             z80 gaiden
-
-  OBC1 emulator code
-  (c) Copyright 2001 - 2004  zsKnight,
-                             pagefault (pagefault@zsnes.com),
-                             Kris Bleakley
-                             Ported from x86 assembler to C by sanmaiwashi
-
-  SPC7110 and RTC C++ emulator code used in 1.39-1.51
-  (c) Copyright 2002         Matthew Kendora with research by
-                             zsKnight,
-                             John Weidman,
-                             Dark Force
-
-  SPC7110 and RTC C++ emulator code used in 1.52+
-  (c) Copyright 2009         byuu,
-                             neviksti
-
-  S-DD1 C emulator code
-  (c) Copyright 2003         Brad Jorsch with research by
-                             Andreas Naive,
-                             John Weidman
-
-  S-RTC C emulator code
-  (c) Copyright 2001 - 2006  byuu,
-                             John Weidman
-
-  ST010 C++ emulator code
-  (c) Copyright 2003         Feather,
-                             John Weidman,
-                             Kris Bleakley,
-                             Matthew Kendora
-
-  Super FX x86 assembler emulator code
-  (c) Copyright 1998 - 2003  _Demo_,
-                             pagefault,
-                             zsKnight
-
-  Super FX C emulator code
-  (c) Copyright 1997 - 1999  Ivar,
-                             Gary Henderson,
-                             John Weidman
-
-  Sound emulator code used in 1.5-1.51
-  (c) Copyright 1998 - 2003  Brad Martin
-  (c) Copyright 1998 - 2006  Charles Bilyue'
-
-  Sound emulator code used in 1.52+
-  (c) Copyright 2004 - 2007  Shay Green (gblargg@gmail.com)
-
-  S-SMP emulator code used in 1.54+
-  (c) Copyright 2016         byuu
-
-  SH assembler code partly based on x86 assembler code
-  (c) Copyright 2002 - 2004  Marcus Comstedt (marcus@mc.pp.se)
-
-  2xSaI filter
-  (c) Copyright 1999 - 2001  Derek Liauw Kie Fa
-
-  HQ2x, HQ3x, HQ4x filters
-  (c) Copyright 2003         Maxim Stepin (maxim@hiend3d.com)
-
-  NTSC filter
-  (c) Copyright 2006 - 2007  Shay Green
-
-  GTK+ GUI code
-  (c) Copyright 2004 - 2017  BearOso
-
-  Win32 GUI code
-  (c) Copyright 2003 - 2006  blip,
-                             funkyass,
-                             Matthew Kendora,
-                             Nach,
-                             nitsuja
-  (c) Copyright 2009 - 2017  OV2
-
-  Mac OS GUI code
-  (c) Copyright 1998 - 2001  John Stiles
-  (c) Copyright 2001 - 2011  zones
-
-  Libretro port
-  (c) Copyright 2011 - 2017  Hans-Kristian Arntzen,
-                             Daniel De Matteis
-                             (Under no circumstances will commercial rights be given)
-
-
-  Specific ports contains the works of other authors. See headers in
-  individual files.
-
-
-  Snes9x homepage: http://www.snes9x.com/
-
-  Permission to use, copy, modify and/or distribute Snes9x in both binary
-  and source form, for non-commercial purposes, is hereby granted without
-  fee, providing that this license information and copyright notice appear
-  with all copies and any derived work.
-
-  This software is provided 'as-is', without any express or implied
-  warranty. In no event shall the authors be held liable for any damages
-  arising from the use of this software or it's derivatives.
-
-  Snes9x is freeware for PERSONAL USE only. Commercial users should
-  seek permission of the copyright holders first. Commercial use includes,
-  but is not limited to, charging money for Snes9x or software derived from
-  Snes9x, including Snes9x or derivatives in commercial game bundles, and/or
-  using Snes9x as a promotion for your commercial product.
-
-  The copyright holders request that bug fixes and improvements to the code
-  should be forwarded to them so everyone can benefit from the modifications
-  in future versions.
-
-  Super NES and Super Nintendo Entertainment System are trademarks of
-  Nintendo Co., Limited and its subsidiary companies.
- ***********************************************************************************/
-
+/*****************************************************************************\
+     Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
+                This file is licensed under the Snes9x License.
+   For further information, consult the LICENSE file in the root directory.
+\*****************************************************************************/
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -212,6 +26,10 @@
 #include <X11/extensions/Xvlib.h>
 
 #define FOURCC_YUY2 0x32595559
+#endif
+
+#ifdef USE_XINERAMA
+#include <X11/extensions/Xinerama.h>
 #endif
 
 #ifdef MITSHM
@@ -282,6 +100,7 @@ struct GUIData
 	bool8			mod1_pressed;
 	bool8			no_repeat;
 	bool8			fullscreen;
+	bool8			js_event_latch;
 	int				x_offset;
 	int				y_offset;
 #ifdef USE_XVIDEO
@@ -298,6 +117,9 @@ struct GUIData
 	unsigned char		y_table[1 << 15];
 	unsigned char		u_table[1 << 15];
 	unsigned char		v_table[1 << 15];
+#endif
+#ifdef USE_XINERAMA
+    uint32 xinerama_head;
 #endif
 #ifdef MITSHM
 	XShmSegmentInfo	sm_info;
@@ -364,6 +186,9 @@ void S9xExtraDisplayUsage (void)
 	S9xMessage(S9X_INFO, S9X_USAGE, "-xvideo                         Hardware accelerated scaling");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-maxaspect                      Try to fill the display, in fullscreen");
 #endif
+#ifdef USE_XINERAMA
+	S9xMessage(S9X_INFO, S9X_USAGE, "-xineramahead                   Xinerama head number for multi-monitor setups");
+#endif
 	S9xMessage(S9X_INFO, S9X_USAGE, "");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-v1                             Video mode: Blocky (default)");
 	S9xMessage(S9X_INFO, S9X_USAGE, "-v2                             Video mode: TV");
@@ -390,6 +215,16 @@ void S9xParseDisplayArg (char **argv, int &i, int argc)
 	else
 	if (!strcasecmp(argv[i], "-maxaspect"))
 		GUI.maxaspect = TRUE;
+	else
+#endif
+#ifdef USE_XINERAMA
+	if (!strcasecmp(argv[i], "-xineramahead"))
+	{
+		if (i + 1 < argc)
+			GUI.xinerama_head = atoi(argv[++i]);
+		else
+			S9xUsage();
+	}
 	else
 #endif
 	if (!strncasecmp(argv[i], "-v", 2))
@@ -547,6 +382,7 @@ const char * S9xParseDisplayConfig (ConfigFile &conf, int pass)
 		keymaps.push_back(strpair_t("K00:slash",        "Superscope Pause"));
 
 		keymaps.push_back(strpair_t("K00:r",            "Rewind"));
+                keymaps.push_back(strpair_t("K00:l",            "Advance"));
 	}
 
 	GUI.no_repeat = !conf.GetBool("Unix/X11::SetKeyRepeat", TRUE);
@@ -554,6 +390,9 @@ const char * S9xParseDisplayConfig (ConfigFile &conf, int pass)
 #ifdef USE_XVIDEO
 	GUI.use_xvideo = conf.GetBool("Unix/X11::Xvideo", FALSE);
 	GUI.maxaspect = conf.GetBool("Unix/X11::MaxAspect", FALSE);
+#endif
+#ifdef USE_XINERAMA
+    GUI.xinerama_head = conf.GetUInt("Unix/X11::XineramaHead", 0);
 #endif
 
 	if (conf.Exists("Unix/X11::VideoMode"))
@@ -855,13 +694,60 @@ void S9xInitDisplay (int argc, char **argv)
 	attrib.background_pixel = BlackPixelOfScreen(GUI.screen);
 	attrib.colormap = XCreateColormap(GUI.display, RootWindowOfScreen(GUI.screen), GUI.visual, AllocNone);
 
+	int screen_left = 0, screen_top = 0;
+	int screen_w = WidthOfScreen(GUI.screen), screen_h = HeightOfScreen(GUI.screen);
+
+#ifdef USE_XINERAMA
+	int heads = 0;
+	XineramaScreenInfo* si = 0;
+
+	int useless1, useless2;
+	if (!XineramaQueryExtension(GUI.display, &useless1, &useless2)) {
+		puts("Xinerama is not available");
+		goto xinerama_end;
+	}
+
+	if (!XineramaIsActive(GUI.display)) {
+		puts("Xinerama is not active");
+		goto xinerama_end;
+	}
+
+	si = XineramaQueryScreens(GUI.display, &heads);
+	if (!si) {
+		puts("XineramaQueryScreens failed");
+		goto xinerama_end;
+	}
+
+	if (GUI.xinerama_head >= heads) {
+		printf("Invalid xinerama head id (expected 0-%d, got %u)\n", heads - 1, GUI.xinerama_head);
+		goto xinerama_end;
+	}
+
+	si = &si[GUI.xinerama_head];
+	screen_left = si->x_org;
+	screen_top = si->y_org;
+	screen_w = si->width;
+	screen_h = si->height;
+
+	printf("Selected xinerama head %u (%d,%d %dx%d)\n", GUI.xinerama_head, screen_left, screen_top, screen_w, screen_h);
+
+xinerama_end:
+#endif
+
+	XSizeHints      Hints;
+	memset((void *) &Hints, 0, sizeof(XSizeHints));
+
 	/* Try to switch to Fullscreen. */
 	if (GUI.fullscreen == TRUE)
 	{
+		Hints.flags = PPosition;
+		Hints.x     = screen_left;
+		Hints.y     = screen_top;
+
 		/* Create the window with maximum screen width,height positioned at 0,0. */
 		GUI.window = XCreateWindow(GUI.display, RootWindowOfScreen(GUI.screen),
-							0, 0,
-							WidthOfScreen(GUI.screen), HeightOfScreen(GUI.screen), 0,
+							Hints.x, Hints.y,
+							screen_w, screen_h, 0,
 							GUI.depth, InputOutput, GUI.visual, CWBackPixel | CWColormap, &attrib);
 
 		/* Try to tell the Window Manager not to decorate this window. */
@@ -874,20 +760,20 @@ void S9xInitDisplay (int argc, char **argv)
 		if (GUI.use_xvideo)
 		{
 			// Set some defaults
-			GUI.scale_w = WidthOfScreen(GUI.screen);
-			GUI.scale_h = HeightOfScreen(GUI.screen);
+			GUI.scale_w = screen_w;
+			GUI.scale_h = screen_h;
 
 			GUI.imageHeight = SNES_HEIGHT_EXTENDED * 2;
 
 			if (! GUI.maxaspect)
 			{
 				// Compute the maximum screen size for scaling xvideo window.
-				double screenAspect = (double)WidthOfScreen(GUI.screen) / HeightOfScreen(GUI.screen);
+				double screenAspect = (double)screen_w / screen_h;
 				double snesAspect = (double)SNES_WIDTH / SNES_HEIGHT_EXTENDED;
 				double ratio = screenAspect / snesAspect;
 
 				printf("\tScreen (%dx%d) aspect %f vs SNES (%dx%d) aspect %f (ratio: %f)\n",
-					WidthOfScreen(GUI.screen),HeightOfScreen(GUI.screen),screenAspect,
+					screen_w,screen_h,screenAspect,
 					SNES_WIDTH,SNES_HEIGHT_EXTENDED,snesAspect,
 					ratio);
 
@@ -897,12 +783,12 @@ void S9xInitDisplay (int argc, char **argv)
 					// widescreen monitor, 4:3 snes
 					//  match height, scale width
 					GUI.scale_w /= ratio;
-					GUI.x_offset = (WidthOfScreen(GUI.screen) - GUI.scale_w) / 2;
+					GUI.x_offset = (screen_w - GUI.scale_w) / 2;
 				} else {
 					// narrow monitor, 4:3 snes
 					//  match width, scale height
 					GUI.scale_h *= ratio;
-					GUI.y_offset = (HeightOfScreen(GUI.screen) - GUI.scale_h) / 2;
+					GUI.y_offset = (screen_h - GUI.scale_h) / 2;
 				}
 			}
 
@@ -912,23 +798,21 @@ void S9xInitDisplay (int argc, char **argv)
 #endif
 		{
 			/* Last: position the output window in the center of the screen. */
-			GUI.x_offset = (WidthOfScreen(GUI.screen) - SNES_WIDTH * 2) / 2;
-			GUI.y_offset = (HeightOfScreen(GUI.screen) - SNES_HEIGHT_EXTENDED * 2) / 2;
+			GUI.x_offset = (screen_w - SNES_WIDTH * 2) / 2;
+			GUI.y_offset = (screen_h - SNES_HEIGHT_EXTENDED * 2) / 2;
 		}
 	} else {
-		/* Create the window. */
-		GUI.window = XCreateWindow(GUI.display, RootWindowOfScreen(GUI.screen),
-								   (WidthOfScreen(GUI.screen) - SNES_WIDTH * 2) / 2, (HeightOfScreen(GUI.screen) - SNES_HEIGHT_EXTENDED * 2) / 2,
-								   SNES_WIDTH * 2, SNES_HEIGHT_EXTENDED * 2, 0, GUI.depth, InputOutput, GUI.visual, CWBackPixel | CWColormap, &attrib);
-
 		/* Tell the Window Manager that we do not wish to be resizable */
-		XSizeHints      Hints;
-		memset((void *) &Hints, 0, sizeof(XSizeHints));
-
-		Hints.flags      = PSize | PMinSize | PMaxSize;
+		Hints.flags      = PSize | PMinSize | PMaxSize | PPosition;
+		Hints.x          = screen_left + (screen_w - SNES_WIDTH * 2) / 2;
+		Hints.y          = screen_top + (screen_h - SNES_HEIGHT_EXTENDED * 2) / 2;
 		Hints.min_width  = Hints.max_width  = Hints.base_width  = SNES_WIDTH * 2;
 		Hints.min_height = Hints.max_height = Hints.base_height = SNES_HEIGHT_EXTENDED * 2;
-		XSetWMNormalHints(GUI.display, GUI.window, &Hints);
+
+		/* Create the window. */
+		GUI.window = XCreateWindow(GUI.display, RootWindowOfScreen(GUI.screen),
+								   Hints.x, Hints.y,
+								   SNES_WIDTH * 2, SNES_HEIGHT_EXTENDED * 2, 0, GUI.depth, InputOutput, GUI.visual, CWBackPixel | CWColormap, &attrib);
 
 		/* Last: Windowed SNES is not drawn with any offsets. */
 		GUI.x_offset = GUI.y_offset = 0;
@@ -937,6 +821,8 @@ void S9xInitDisplay (int argc, char **argv)
 		GUI.scale_h = SNES_HEIGHT_EXTENDED * 2;
 #endif
 	}
+
+	XSetWMNormalHints(GUI.display, GUI.window, &Hints);
 
 	/* Load UI cursors */
 	static XColor	bg, fg;
@@ -979,43 +865,7 @@ void S9xInitDisplay (int argc, char **argv)
 	}
 #endif
 
-	switch (GUI.depth)
-	{
-		default:
-		case 32:
-		case 24:
-			S9xSetRenderPixelFormat(RGB555);
-			GUI.pixel_format = 555;
-			break;
-
-		case 16:
-			if (GUI.red_size != GUI.green_size || GUI.blue_size != GUI.green_size)
-			{
-				// 565 format
-				if (GUI.green_shift > GUI.blue_shift && GUI.green_shift > GUI.red_shift)
-					S9xSetRenderPixelFormat(GBR565);
-				else
-				if (GUI.red_shift > GUI.blue_shift)
-					S9xSetRenderPixelFormat(RGB565);
-				else
-					S9xSetRenderPixelFormat(BGR565);
-
-				GUI.pixel_format = 565;
-				break;
-			}
-			// FALL ...
-		case 15:
-			if (GUI.green_shift > GUI.blue_shift && GUI.green_shift > GUI.red_shift)
-				S9xSetRenderPixelFormat(GBR555);
-			else
-			if (GUI.red_shift > GUI.blue_shift)
-				S9xSetRenderPixelFormat(RGB555);
-			else
-				S9xSetRenderPixelFormat(BGR555);
-
-			GUI.pixel_format = 555;
-			break;
-	}
+	GUI.pixel_format = 565;
 
 	SetupImage();
 
@@ -1442,12 +1292,9 @@ void S9xPutImage (int width, int height)
 			for (int x = 0; x < SNES_WIDTH * 2; x += 2)
 			{
 				// Read two RGB pxls
-				//  TODO: there is an assumption of endianness here...
-				// ALSO todo:  The 0x7FFF works around some issue with S9xPutChar, where
-				//  despite asking for RGB555 in InitImage, it insists on drawing with RGB565 instead.
-				//  This may discolor messages but at least it doesn't overflow yuv-tables and crash.
-				unsigned short rgb1 = (*s & 0x7FFF); s++;
-				unsigned short rgb2 = (*s & 0x7FFF); s++;
+				//  Now that we are RGB565 throughout, need to drop the Green LSB
+				unsigned short rgb1 = (*s & 0xFFC0) >> 1 | (*s & 0x001F); s++;
+				unsigned short rgb2 = (*s & 0xFFC0) >> 1 | (*s & 0x001F); s++;
 
 				// put two YUYV pxls
 				// lum1
@@ -1603,7 +1450,7 @@ static void Repaint (bool8 isFrameBoundry)
 	if (GUI.use_shared_memory)
 	{
 		XShmPutImage(GUI.display, GUI.window, GUI.gc, GUI.image->ximage, 0, 0, GUI.x_offset, GUI.y_offset, SNES_WIDTH * 2, SNES_HEIGHT_EXTENDED * 2, False);
-		XSync(GUI.display, False);
+		XSync(GUI.display, False); // Is this double-sync?  See XQueryPointer below...
 	}
 	else
 #endif
@@ -1662,8 +1509,21 @@ static bool8 CheckForPendingXEvents (Display *display)
 #endif
 }
 
+void S9xLatchJSEvent ()
+{
+	// record that a JS event happened and was reported to the engine
+	GUI.js_event_latch = TRUE;
+}
+
 void S9xProcessEvents (bool8 block)
 {
+	// Kick the screensaver if a joystick event occurred
+	if (GUI.js_event_latch == TRUE) {
+		XWarpPointer(GUI.display, None, None, 0, 0, 0, 0, 0, 0);
+		GUI.js_event_latch = FALSE;
+	}
+
+	// Process all other X events
 	while (block || CheckForPendingXEvents(GUI.display))
 	{
 		XEvent	event;
