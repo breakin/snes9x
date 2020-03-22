@@ -44,6 +44,9 @@ void S9xMainLoop (void)
 		S9xMovieUpdate();
 	}
 
+    SnesisticsRegs snestistics_irq_registers;
+    bool snestistics_late_irq_report = false;
+
 	for (;;)
 	{
 		if (CPU.NMIPending)
@@ -67,12 +70,15 @@ void S9xMainLoop (void)
 				}
 
 				CHECK_FOR_IRQ_CHANGE();
+				if (snestistics_late_irq_report) {
+					snestistics_op(snestistics_irq_registers, snestistics_capture_regs());
+					snestistics_late_irq_report = false;
+				}
 				S9xOpcode_NMI();
 				snestistics_event(SnestisticsEvent::EVENT_NMI, reg_before, snestistics_capture_regs());
 			}
 		}
 
-        const auto reg_before = snestistics_capture_regs();
 		if (CPU.Cycles >= Timings.NextIRQTimer)
 		{
 			S9xUpdateIRQPositions(false);
@@ -81,6 +87,7 @@ void S9xMainLoop (void)
 
 		if (CPU.IRQLine || CPU.IRQExternal)
 		{
+            const auto reg_before = snestistics_capture_regs();
 			if (CPU.WaitingForInterrupt)
 			{
 				CPU.WaitingForInterrupt = FALSE;
@@ -94,13 +101,21 @@ void S9xMainLoop (void)
 			{
 				/* The flag pushed onto the stack is the new value */
 				CHECK_FOR_IRQ_CHANGE();
+				if (snestistics_late_irq_report) {
+					snestistics_op(snestistics_irq_registers, snestistics_capture_regs());
+					snestistics_late_irq_report = false;
+				}
 				S9xOpcode_IRQ();
-                snestistics_event(SnestisticsEvent::EVENT_IRQ, reg_before, snestistics_capture_regs());
+				snestistics_event(SnestisticsEvent::EVENT_IRQ, reg_before, snestistics_capture_regs());
 			}
 		}
 
 		/* Change IRQ flag for instructions that set it only on last cycle */
 		CHECK_FOR_IRQ_CHANGE();
+        if (snestistics_late_irq_report) {
+            snestistics_op(snestistics_irq_registers, snestistics_capture_regs());
+            snestistics_late_irq_report = false;
+        }
 
 	#ifdef DEBUGGER
 		if ((CPU.Flags & BREAK_FLAG) && !(CPU.Flags & SINGLE_STEP_FLAG))
@@ -169,12 +184,18 @@ void S9xMainLoop (void)
 				Opcodes = S9xOpcodesSlow;
 		}
 
-		const auto reg_before_op = snestistics_capture_regs();
+		const auto reg_before = snestistics_capture_regs();
 
 		Registers.PCw++;
 		(*Opcodes[Op].S9xOpcode)();
 
-		snestistics_op(reg_before_op, snestistics_capture_regs());
+		if (Op == 0x58 || Op == 0x78) {
+			// CLI and SEI have their action deferred until later for timing reasons so save away before regs and do the op later
+			snestistics_irq_registers = reg_before;
+			snestistics_late_irq_report = true;
+		} else {
+			snestistics_op(reg_before, snestistics_capture_regs());
+		}
 
 		if (Settings.SA1)
 			S9xSA1MainLoop();
